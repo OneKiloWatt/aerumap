@@ -23,8 +23,8 @@ aimap/
 │   ├── FIRESTORE_RULES.md# Firestoreセキュリティルール仕様
 │   ├── DATA_STRUCTURES.md# Firestoreのデータ構造一覧
 │   ├── DEPLOYMENT.md     # Firebase / GitHub Actionsのデプロイ＆自動処理設計
-│   ├── PAGES/            # 各画面のUI仕様（ページごとに分割）
-│   └── API/              # バックエンドAPIの仕様（エンドポイントごとに分割）
+│   ├── PAGES/            # 各画面のUI仕様（ページごとに分割）、仕様が複雑な場合追加
+│   └── API/              # バックエンドAPIの仕様（エンドポイントごとに分割）、必要であれば追加
 ├── .github/workflows/    # GitHub Actions（CI/CD、自動削除処理など）
 ├── firebase.json         # Firebase Hosting 設定
 ├── firestore.rules       # Firestore セキュリティルール
@@ -72,6 +72,4 @@ bash rebuild.sh
 MIT License.  
 詳細は [LICENSE](./LICENSE) を参照してください。
 ```
-
----
 
