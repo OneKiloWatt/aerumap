@@ -26,7 +26,6 @@ aimap/
 │   ├── PAGES/            # 各画面のUI仕様（ページごとに分割）、仕様が複雑な場合追加
 │   └── API/              # バックエンドAPIの仕様（エンドポイントごとに分割）、必要であれば追加
 ├── .github/workflows/    # GitHub Actions（CI/CD、自動削除処理など）
-├── firebase.json         # Firebase Hosting 設定
 ├── firestore.rules       # Firestore セキュリティルール
 ├── Dockerfile            # ローカル開発用 Docker イメージ定義 
 ├── docker-compose.yml    # Docker 開発環境構築用
