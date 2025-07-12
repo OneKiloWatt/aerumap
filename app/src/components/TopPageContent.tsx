@@ -1,8 +1,27 @@
 // src/components/TopPageContent.tsx
-import React from 'react';
-import './TopPageContent.css'; // CSSを別ファイルに分ける想定
+import React, { useState } from 'react';
+import './TopPageContent.css';
+import NicknameForm from './NicknameForm';
+import { useNavigate } from 'react-router-dom';
 
 export default function TopPageContent() {
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handleNicknameSubmit = (nickname: string) => {
+    alert(`ルームを作成するよ！ニックネーム：${nickname}`);
+    setShowModal(false);
+    navigate('/room');
+  };
+
   return (
     <>
       {/* ヒーローセクション */}
@@ -12,7 +31,14 @@ export default function TopPageContent() {
             <div className="hero-text">
               <h1>「今どこ？」のやり取り、<br />もうおしまい</h1>
               <p>スマホ一つで、友達の居場所がリアルタイムでわかっちゃう。</p>
-              <a href="#" className="cta-button" onClick={() => alert('ルーム作成機能は実装予定です！')}>
+              <a
+                href="#"
+                className="cta-button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleOpenModal();
+                }}
+              >
                 ルームを作成する
               </a>
             </div>
@@ -22,6 +48,14 @@ export default function TopPageContent() {
           </div>
         </div>
       </section>
+
+      {/* ニックネームモーダル */}
+      {showModal && (
+        <NicknameForm
+          onSubmit={handleNicknameSubmit}
+          onClose={handleCloseModal}
+        />
+      )}
 
       {/* ストーリー説明 */}
       <section className="story">
@@ -82,7 +116,7 @@ export default function TopPageContent() {
             無料で使えて、アプリのインストールも不要。<br />
             ブラウザがあれば、今すぐ始められます。
           </p>
-          <a href="#" className="cta-button" onClick={() => alert('ルーム作成機能は実装予定です！')}>
+          <a href="#" className="cta-button" onClick={handleOpenModal}>
             ルームを作成する
           </a>
         </div>

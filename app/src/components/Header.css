@@ -29,6 +29,8 @@ header {
 }
 
 .logo {
+  text-decoration: none;
+  color: inherit;
   display: flex;
   align-items: center;  /* ← 高さピッタリ揃える！ */
   gap: 6px;             /* ← 間の余白を明示！ */
