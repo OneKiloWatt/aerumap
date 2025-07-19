@@ -30,14 +30,14 @@ export default function NicknameForm({ onSubmit, onClose }: Props) {
     <div className="nickname-form-overlay">
       <div className="nickname-form-container">
         <button className="close-button" onClick={onClose}>×</button>
-        <h2>ニックネームを入力してね</h2>
+        <h2>最後にニックネームを決めよう</h2>
 
         <div className="input-with-button">
           <input
             type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            placeholder="例：ギャルマスター"
+            placeholder="ニックネームを入れてね"
           />
           <button onClick={handleRandomGenerate}>🎲</button>
         </div>

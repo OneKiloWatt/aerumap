@@ -1,0 +1,297 @@
+/* MapView.css */
+.map-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-color: #F5F2EB;
+}
+
+.map-loading {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #8B4513;
+}
+
+/* Leafletカスタムマーカー */
+.custom-marker {
+  background: none !important;
+  border: none !important;
+}
+
+.marker-content {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marker-me .marker-content {
+  background: linear-gradient(45deg, #8FBC8F, #6B8E6B);
+  color: white;
+  box-shadow: 0 4px 12px rgba(143, 188, 143, 0.4);
+}
+
+.marker-other .marker-content {
+  background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.marker-content:hover {
+  transform: scale(1.1);
+}
+
+/* Leafletポップアップ用スタイル */
+.popup-content-leaflet {
+  padding: 0;
+  margin: 0;
+}
+
+.popup-nickname {
+  font-weight: bold;
+  color: #8B4513;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.popup-message {
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.popup-distance {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.popup-time {
+  color: #999;
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+
+.edit-message-btn {
+  background: linear-gradient(45deg, #8FBC8F, #6B8E6B);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+}
+
+.edit-message-btn:hover {
+  background: linear-gradient(45deg, #7AA07A, #5A7E5A);
+}
+
+/* 右上共有ボタン */
+.share-button {
+  position: fixed;
+  top: 80px; /* ヘッダーの下に配置 */
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* Leafletより上に表示 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 左上メニューボタン */
+.menu-button {
+  position: fixed;
+  top: 80px; /* ヘッダーの下に移動 */
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: #8B4513;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* Leafletより上に表示 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 右下現在位置ボタン */
+.location-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* Leafletより上に表示 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Google Mapsっぽい現在位置アイコン（あいまっぷカラー） */
+.location-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #8FBC8F;
+  background: white;
+  position: relative;
+}
+
+.location-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6B8E6B;
+}
+
+/* メニューオーバーレイ */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1100; /* メニューボタンより上に */
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 140px 20px 20px 20px; /* ヘッダー + メニューボタン分を考慮 */
+}
+
+.menu-dropdown {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-item:hover {
+  background-color: #f8f9fa;
+}
+
+.edit-nickname-btn {
+  color: #8B4513;
+}
+
+.edit-nickname-btn:hover {
+  background-color: #f5f2eb;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 8px 0;
+}
+
+.exit-btn {
+  color: #d63384;
+}
+
+.exit-btn:hover {
+  background-color: #fff5f8;
+}
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+  .share-button {
+    top: 75px; /* スマホ版でもヘッダー下に */
+    right: 15px;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .menu-button {
+    top: 75px; /* スマホ版でもヘッダー下に */
+    left: 15px;
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .location-button {
+    bottom: 15px;
+    right: 15px;
+    width: 56px;
+    height: 56px;
+  }
+  
+  .location-icon {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .location-icon::after {
+    width: 7px;
+    height: 7px;
+  }
+  
+  .menu-overlay {
+    padding: 130px 15px 15px 15px; /* スマホ版メニュー位置調整 */
+    justify-content: flex-start; /* 左寄せ */
+  }
+}

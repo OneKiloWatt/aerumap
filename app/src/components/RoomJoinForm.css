@@ -1,0 +1,250 @@
+/* src/components/RoomJoinForm.css */
+.room-join-form-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.room-join-form-container {
+  background-color: #fff;
+  padding: 24px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  max-width: 90%;
+  width: 400px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.room-join-form-container h2 {
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+  color: #8B4513;
+}
+
+.room-join-form-container input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.room-join-form-container button {
+  padding: 10px 20px;
+  background-color: #ff7f7f;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.room-join-form-container button:hover {
+  background-color: #ff5f5f;
+}
+
+.room-join-form-container button.disabled {
+  background-color: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.room-join-form-container button.disabled:hover {
+  background-color: #ccc;
+}
+
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 8px;
+}
+
+.input-with-button input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid #333;
+  outline: none;
+  height: 48px;
+  box-sizing: border-box;
+  margin-bottom: 0;
+}
+
+.input-with-button button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  font-size: 20px;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  background-color: #f9f6f2;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.input-with-button button:hover {
+  background-color: #f0edea;
+}
+
+/* 新しく追加するスタイル */
+
+.app-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: normal;
+}
+
+.welcome-message {
+  text-align: center;
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #8FBC8F;
+}
+
+.welcome-message p {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.welcome-message p:last-child {
+  margin-bottom: 0;
+}
+
+.location-notice {
+  font-size: 13px;
+  color: #d63384;
+  margin-bottom: 20px;
+  text-align: center;
+  line-height: 1.4;
+  padding: 12px;
+  background-color: #fff3cd;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+}
+
+.app-description {
+  text-align: left;
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #8FBC8F;
+}
+
+.app-description p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.app-description p:last-child {
+  margin-bottom: 0;
+}
+
+.location-warning {
+  color: #d63384 !important;
+}
+
+.welcome-text {
+  margin-bottom: 4px !important;
+}
+
+.privacy-notice {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.warning-content {
+  text-align: left;
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #fff3cd;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+}
+
+.warning-content p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.warning-content p:last-child {
+  margin-bottom: 0;
+}
+
+.warning-content a {
+  color: #8B4513;
+  text-decoration: underline;
+}
+
+.warning-content a:hover {
+  color: #5a2d0c;
+}
+
+.agreement-section {
+  margin-bottom: 16px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  text-align: left;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
