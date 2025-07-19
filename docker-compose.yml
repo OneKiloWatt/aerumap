@@ -1,12 +1,31 @@
-version: '3'
+version: "3.9"
 
 services:
-  app:
-    build: .
-    container_name: react-spa-dev
+  firebase:
+    build:
+      context: .
+      dockerfile: docker/firebase/Dockerfile
+    container_name: firebase-emulator
+    ports:
+      - "9099:9099"   # Auth
+      - "4000:4000"   # Emulator UI
+      - "5001:5001"   # Functions
+      - "8080:8080"   # Firestore
+    volumes:
+      - ./firebase:/app
+    tty: true
+
+
+  react:
+    build:
+      context: .
+      dockerfile: docker/react/Dockerfile
+    container_name: react-app
     ports:
       - "3000:3000"
     volumes:
       - ./app:/app
-    stdin_open: true # 標準入力を開いたままにする
-    tty: true # 疑似TTYを割り当てる
+    working_dir: /app
+    command: sh -c "npm install && npm start"
+    depends_on:
+      - firebase

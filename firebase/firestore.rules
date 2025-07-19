@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== ルーム情報（メタ情報） =====
+    match /rooms/{roomId} {
+      // 読み取り：そのルームのメンバーのみ
+      allow read: if exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
+      
+      // 書き込み：認証済みユーザーのみ（ルーム作成用）
+      allow create: if request.auth != null;
+      
+      // 更新・削除：禁止（Cloud Functions/GitHub Actions経由のみ）
+      allow update, delete: if false;
+    }
+
+    // ===== メンバー登録・管理 =====
+    match /rooms/{roomId}/members/{uid} {
+      // 読み取り：本人のみ
+      allow read: if request.auth.uid == uid;
+      
+      // 書き込み：本人のみ（参加登録用）
+      allow create, update: if request.auth.uid == uid;
+      
+      // 削除：本人のみ（退出機能用）
+      allow delete: if request.auth.uid == uid;
+    }
+
+    // ===== 位置情報の共有 =====
+    match /rooms/{roomId}/locations/{uid} {
+      // 読み取り：そのルームのメンバー全員
+      allow read: if exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
+      
+      // 書き込み：本人のみ（なりすまし防止）
+      allow create, update: if request.auth.uid == uid;
+      
+      // 削除：本人のみ（退出時のクリーンアップ用）
+      allow delete: if request.auth.uid == uid;
+    }
+
+    // ===== レート制限管理（内部処理用） =====
+    match /rateLimits/{document} {
+      // Cloud Functions からのみアクセス
+      allow read, write: if request.auth != null;
+    }
+
+    // ===== アクセスログ（内部処理用） =====
+    match /accessLogs/{document} {
+      // Cloud Functions からの書き込みのみ
+      allow write: if request.auth != null;
+      // 読み取りは禁止（プライバシー保護）
+      allow read: if false;
+    }
+
+    // ===== その他すべて拒否 =====
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
