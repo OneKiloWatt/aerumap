@@ -9,7 +9,7 @@
 ## 1. フロントエンドデプロイ（GitHub Pages）
 
 * ブランチ：`main`
-* デプロイ先：`https://onekilowatt.github.io/aimap/`
+* デプロイ先：`https://onekilowatt.github.io/aerumap/`
 * デプロイ手段：GitHub Actions により `app/` ディレクトリをビルドしてデプロイ
 * 使用ライブラリ：React, React-Leaflet
 
