@@ -2,16 +2,26 @@
 import React, { useState } from 'react';
 import './RoomJoinForm.css';
 import { nicknameList } from '../constants/nicknameList';
+import { joinRoom } from '../api/joinRoom';
 
 type Props = {
+  roomId: string;
   onSubmit: (nickname: string) => void;
+  onError?: (error: string) => void;
 };
 
-export default function RoomJoinForm({ onSubmit }: Props) {
+export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
   const [step, setStep] = useState(1);
   const [nickname, setNickname] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
+
+  // レンダリング確認用（デバッグ）
+  console.log('📝 RoomJoinForm レンダリング実行中', {
+    roomId,
+    step,
+    nickname: nickname.substring(0, 3) + '...'
+  });
 
   const handleNext = () => {
     if (!nickname.trim()) {
@@ -22,12 +32,39 @@ export default function RoomJoinForm({ onSubmit }: Props) {
     setStep(2);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!agreed) {
       setError('利用規約への同意が必要です');
       return;
     }
-    onSubmit(nickname);
+
+    setError(''); // エラーをクリア
+    
+    try {
+      // joinRoom API を呼び出し
+      const result = await joinRoom(roomId, nickname);
+      
+      if (result.success) {
+        console.log('ルーム参加成功:', result);
+        onSubmit(nickname); // 成功時は親に通知
+      } else {
+        console.error('ルーム参加失敗:', result.error);
+        setError(result.error);
+        
+        // 親コンポーネントにもエラーを通知（オプション）
+        if (onError) {
+          onError(result.error);
+        }
+      }
+    } catch (error) {
+      console.error('ルーム参加処理中エラー:', error);
+      const errorMessage = '参加処理中にエラーが発生しました';
+      setError(errorMessage);
+      
+      if (onError) {
+        onError(errorMessage);
+      }
+    }
   };
 
   const handleRandomGenerate = () => {

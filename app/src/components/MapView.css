@@ -176,7 +176,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 2px solid #8FBC8F;
+  border: 2px solid #8B4513;
   background: white;
   position: relative;
 }
@@ -190,7 +190,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6B8E6B;
+  background: #8B4513;
 }
 
 /* メニューオーバーレイ */
@@ -245,7 +245,7 @@
 .menu-divider {
   height: 1px;
   background-color: #e0e0e0;
-  margin: 8px 0;
+  margin: 0;
 }
 
 .exit-btn {
