@@ -97,7 +97,15 @@ async function logAccess(ip: string, roomId: string, success: boolean, error?: s
  */
 export const checkRoom = functions.https.onRequest(async (req: Request, res: Response) => {
   // CORS設定
-  res.set('Access-Control-Allow-Origin', 'https://aimap.app');
+  const allowedOrigins = ['http://localhost:3000', 'https://aimap.app'];
+  const origin = req.headers.origin || '';
+
+  if (allowedOrigins.includes(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+  } else {
+    res.set('Access-Control-Allow-Origin', 'https://aimap.app'); // fallback（←念のため）
+  }
+
   res.set('Access-Control-Allow-Methods', 'GET');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
   
