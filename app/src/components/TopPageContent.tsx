@@ -3,10 +3,15 @@ import React, { useState } from 'react';
 import './TopPageContent.css';
 import NicknameForm from './NicknameForm';
 import { useNavigate } from 'react-router-dom';
+import { createRoom } from '../api/createRoom';
+import { getAuth } from 'firebase/auth';
+import { auth } from '../firebase';
+
 
 export default function TopPageContent() {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const user = auth.currentUser;
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -16,10 +21,20 @@ export default function TopPageContent() {
     setShowModal(false);
   };
 
-  const handleNicknameSubmit = (nickname: string) => {
-    alert(`ルームを作成するよ！ニックネーム：${nickname}`);
-    setShowModal(false);
-    navigate('/room');
+  const handleNicknameSubmit = async (nickname: string) => {
+    try {
+      const user = getAuth().currentUser;
+      if (!user) throw new Error('未ログイン状態です');
+  
+      const idToken = await user.getIdToken();
+      const roomId = await createRoom(nickname, idToken);
+  
+      setShowModal(false);
+      navigate(`/room/${roomId}?creator=true`);
+    } catch (err) {
+      console.error('ルーム作成エラー:', err);
+      alert('ルーム作成に失敗しました😭');
+    }
   };
 
   return (
