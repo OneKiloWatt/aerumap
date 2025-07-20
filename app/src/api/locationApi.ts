@@ -32,6 +32,83 @@ interface MemberData {
 }
 
 /**
+ * 自分のニックネームを更新
+ */
+export async function updateMyNickname(roomId: string, nickname: string): Promise<boolean> {
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      logger.error('updateMyNickname: 未認証ユーザー');
+      return false;
+    }
+
+    logger.debug('ニックネーム更新開始', {
+      roomId: roomId.substring(0, 4) + '***',
+      uid: currentUser.uid.substring(0, 4) + '***',
+      nicknameLength: nickname.length
+    });
+
+    // バリデーション
+    if (!roomId || roomId.length !== 12) {
+      logger.error('updateMyNickname: 無効なroomId', { roomId });
+      return false;
+    }
+
+    if (!nickname || nickname.trim().length === 0) {
+      logger.error('updateMyNickname: 空のニックネーム');
+      return false;
+    }
+
+    if (nickname.trim().length > 20) {
+      logger.error('updateMyNickname: ニックネームが長すぎます', { length: nickname.trim().length });
+      return false;
+    }
+
+    // メンバー情報を更新
+    const memberRef = firestoreDoc(db, `rooms/${roomId}/members`, currentUser.uid);
+    const locationRef = firestoreDoc(db, `rooms/${roomId}/locations`, currentUser.uid);
+    
+    logger.debug('Firestore ニックネーム更新開始', {
+      path: `rooms/${roomId}/members/${currentUser.uid}`,
+      nicknameLength: nickname.trim().length
+    });
+
+    // 並行でmembersとlocationsを更新（リアルタイム通知用）
+    const [memberResult, locationResult] = await Promise.allSettled([
+      setDoc(memberRef, {
+        nickname: nickname.trim(),
+        updatedAt: new Date()
+      }, { merge: true }),
+      
+      setDoc(locationRef, {
+        updatedAt: new Date() // リアルタイム通知のためにlocationsのupdatedAtも更新
+      }, { merge: true })
+    ]);
+
+    // 結果をチェック
+    if (memberResult.status === 'rejected') {
+      logger.error('ニックネーム更新エラー', memberResult.reason);
+      return false;
+    }
+
+    if (locationResult.status === 'rejected') {
+      logger.warn('位置情報更新エラー（ニックネーム通知用）', locationResult.reason);
+      // 位置情報更新失敗でもメンバー情報更新成功ならOKとする
+    }
+
+    logger.debug('ニックネーム更新成功', { 
+      roomId: roomId.substring(0, 4) + '***',
+      nicknameLength: nickname.trim().length
+    });
+    
+    return true;
+  } catch (error) {
+    logger.error('ニックネーム更新エラー', error);
+    return false;
+  }
+}
+
+/**
  * 自分の位置情報をFirestoreに書き込み
  */
 export async function writeLocation(roomId: string, position: [number, number]): Promise<boolean> {
@@ -139,16 +216,35 @@ export async function updateMyMessage(roomId: string, message: string): Promise<
 
     // メンバー情報を更新
     const memberRef = firestoreDoc(db, `rooms/${roomId}/members`, currentUser.uid);
+    const locationRef = firestoreDoc(db, `rooms/${roomId}/locations`, currentUser.uid);
     
     logger.debug('Firestore メンバー情報更新開始', {
       path: `rooms/${roomId}/members/${currentUser.uid}`,
       messageLength: message.length
     });
 
-    await setDoc(memberRef, {
-      message: message.trim(),
-      updatedAt: new Date()
-    }, { merge: true }); // 既存データを保持してマージ
+    // 並行でmembersとlocationsを更新（リアルタイム通知用）
+    const [memberResult, locationResult] = await Promise.allSettled([
+      setDoc(memberRef, {
+        message: message.trim(),
+        updatedAt: new Date()
+      }, { merge: true }),
+      
+      setDoc(locationRef, {
+        updatedAt: new Date() // リアルタイム通知のためにlocationsのupdatedAtも更新
+      }, { merge: true })
+    ]);
+
+    // 結果をチェック
+    if (memberResult.status === 'rejected') {
+      logger.error('メンバー情報更新エラー', memberResult.reason);
+      return false;
+    }
+
+    if (locationResult.status === 'rejected') {
+      logger.warn('位置情報更新エラー（メッセージ通知用）', locationResult.reason);
+      // 位置情報更新失敗でもメンバー情報更新成功ならOKとする
+    }
 
     logger.debug('メッセージ更新成功', { 
       roomId: roomId.substring(0, 4) + '***',
