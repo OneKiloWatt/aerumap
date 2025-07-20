@@ -113,17 +113,17 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
           </>
         ) : (
           <>
-            <h2>⚠️ このリンク、ほんとに信用できる？</h2>
+            <h2>⚠️ この招待、知ってる人から送られてきた？</h2>
             
             <div className="warning-content">
               <p>
-                <strong>このリンクが信用できる人物から送られたものでなければ、絶対に参加しないでください。</strong>
+                <strong>このページのリンクが信頼できる人から送られたものでなければ、参加しないでね！</strong>
               </p>
               <p>
-                位置情報がリアルタイムで共有されることを理解し、信頼できる相手であることを確認してください。
+                このルームじゃ、あなたの現在地がリアルタイムで共有されるよ〜
               </p>
               <p>
-                詳しくは<a href="/terms" target="_blank" rel="noopener noreferrer">利用規約</a>をご確認ください。
+                詳しくは<a href="/terms" target="_blank" rel="noopener noreferrer">利用規約</a>へ。
               </p>
             </div>
 

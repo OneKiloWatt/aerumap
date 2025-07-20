@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
@@ -7,9 +7,11 @@ import './MapView.css';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useLocationSharing } from '../hooks/useLocationSharing';
 import { useMyMemberInfo } from '../hooks/useMyMemberInfo';
-import { testFirestoreConnection, updateMyMessage } from '../api/locationApi';
+import { useToast } from '../hooks/useToast';
+import { testFirestoreConnection, updateMyMessage, updateMyNickname } from '../api/locationApi';
 import { exitRoom } from '../api/exitRoom';
 import { logger } from '../utils/logger';
+import ToastContainer from './ToastContainer';
 
 // 型定義
 interface MarkerData {
@@ -45,13 +47,20 @@ export default function MapView(props: MapViewProps = {}) {
   
   const { roomId, onShareClick, onMapReady } = props;
   const navigate = useNavigate();
+  const { showSuccess, showError, showInfo, toasts, removeToast } = useToast();
   const [showMenu, setShowMenu] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showNicknameModal, setShowNicknameModal] = useState(false);
   const [editingMessage, setEditingMessage] = useState('');
+  const [editingNickname, setEditingNickname] = useState('');
   const [messageLoading, setMessageLoading] = useState(false);
+  const [nicknameLoading, setNicknameLoading] = useState(false);
   const [exitLoading, setExitLoading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  
+  // 地図インスタンス参照用
+  const mapRef = React.useRef<L.Map | null>(null);
   
   // 位置情報フック
   logger.debug('useGeolocation フック呼び出し開始');
@@ -96,6 +105,98 @@ export default function MapView(props: MapViewProps = {}) {
     hasMyMemberInfo: !!myMemberInfo,
     memberLoading
   });
+
+  // リアルタイム通知用：前回のotherUsers状態を記録
+  const prevOtherUsersRef = React.useRef<typeof otherUsers>([]);
+  const isInitialLoadRef = React.useRef(true); // 初回ロード判定
+  
+  // otherUsersの変化を監視してリアルタイム通知
+  React.useEffect(() => {
+    if (!isSharing || !myMemberInfo) return; // 自分が参加してない時は通知しない
+    
+    const prevUsers = prevOtherUsersRef.current;
+    const currentUsers = otherUsers;
+    
+    // デバッグログ：状態変化を詳細記録
+    logger.debug('otherUsers変化検出', {
+      prevCount: prevUsers.length,
+      currentCount: currentUsers.length,
+      isInitialLoad: isInitialLoadRef.current,
+      prevUsers: prevUsers.map(u => ({ uid: u.uid.substring(0, 4) + '***', nickname: u.nickname, message: u.message })),
+      currentUsers: currentUsers.map(u => ({ uid: u.uid.substring(0, 4) + '***', nickname: u.nickname, message: u.message }))
+    });
+    
+    // 初回ロード時のみスキップ（その後の変化は全て通知）
+    if (isInitialLoadRef.current) {
+      prevOtherUsersRef.current = currentUsers;
+      isInitialLoadRef.current = false;
+      logger.debug('初回ロード完了、次回から通知開始');
+      return;
+    }
+    
+    // 新規参加者を検出
+    const newUsers = currentUsers.filter(current => 
+      !prevUsers.some(prev => prev.uid === current.uid)
+    );
+    
+    // 退出者を検出
+    const leftUsers = prevUsers.filter(prev => 
+      !currentUsers.some(current => current.uid === prev.uid)
+    );
+    
+    // メッセージ更新者を検出
+    const messageUpdatedUsers = currentUsers.filter(current => {
+      const prevUser = prevUsers.find(prev => prev.uid === current.uid);
+      if (!prevUser) return false;
+      
+      const messageChanged = prevUser.message !== current.message;
+      logger.debug('メッセージ変更チェック', {
+        uid: current.uid.substring(0, 4) + '***',
+        nickname: current.nickname,
+        prevMessage: prevUser.message,
+        currentMessage: current.message,
+        changed: messageChanged
+      });
+      
+      return messageChanged;
+    });
+    
+    logger.debug('変化検出結果', {
+      newUsers: newUsers.length,
+      leftUsers: leftUsers.length,
+      messageUpdatedUsers: messageUpdatedUsers.length
+    });
+    
+    // 新規参加通知
+    newUsers.forEach(user => {
+      logger.debug('新規参加者検出 → 通知表示', { nickname: user.nickname });
+      showInfo(`${user.nickname}さんが参加しました 👋`, { duration: 4000 });
+    });
+    
+    // 退出通知
+    leftUsers.forEach(user => {
+      logger.debug('退出者検出 → 通知表示', { nickname: user.nickname });
+      showInfo(`${user.nickname}さんが退出しました 👋`, { duration: 4000 });
+    });
+    
+    // メッセージ更新通知
+    messageUpdatedUsers.forEach(user => {
+      logger.debug('メッセージ更新検出 → 通知表示', { 
+        nickname: user.nickname, 
+        newMessage: user.message 
+      });
+      
+      const messageText = user.message 
+        ? `${user.nickname}さんがメッセージを更新しました：「${user.message}」`
+        : `${user.nickname}さんがメッセージを更新しました`;
+        
+      showInfo(messageText, { duration: 5000 });
+    });
+    
+    // 現在の状態を記録
+    prevOtherUsersRef.current = currentUsers;
+    
+  }, [otherUsers, isSharing, myMemberInfo, showInfo]);
 
   // 地図読み込み完了時の処理
   React.useEffect(() => {
@@ -167,10 +268,60 @@ export default function MapView(props: MapViewProps = {}) {
   }, [position, otherUsers, myMemberInfo, memberLoading]);
 
   const handleFitBounds = () => {
-    // TODO: 全ての人が画面内に収まるように地図の表示範囲を調整する
-    // React-LeafletのuseMapフックを使用してマップインスタンスにアクセス
-    // markersの座標を元にboundsを計算してfitBounds()を呼び出す
-    logger.debug('現在位置ボタン押下');
+    logger.debug('現在位置ボタン押下', { markersCount: markers.length });
+    
+    if (!mapRef.current) {
+      logger.warn('地図インスタンスが見つかりません');
+      showError('地図の操作に失敗しました。ページを再読み込みしてください。');
+      return;
+    }
+
+    if (markers.length === 0) {
+      logger.warn('マーカーが存在しません');
+      showInfo('まだ誰も参加していないようです 🤔');
+      return;
+    }
+
+    try {
+      // 全マーカーの座標を取得
+      const coordinates: [number, number][] = markers.map(marker => [marker.lat, marker.lng]);
+      
+      logger.debug('座標計算', { 
+        coordinates: coordinates.map(coord => ({ lat: coord[0], lng: coord[1] }))
+      });
+
+      if (coordinates.length === 1) {
+        // マーカーが1つだけの場合：適切なズームレベルで中央表示
+        const [lat, lng] = coordinates[0];
+        mapRef.current.setView([lat, lng], 16, { animate: true, duration: 1.0 });
+        
+        logger.debug('単一マーカー中央表示', { lat, lng, zoom: 16 });
+        showInfo('現在位置に移動しました 📍');
+      } else {
+        // 複数マーカーの場合：全てが収まるようにfitBounds
+        const bounds = L.latLngBounds(coordinates);
+        
+        // 適度な余白を追加（型安全な定義）
+        const paddingOptions: L.FitBoundsOptions = {
+          paddingTopLeft: [50, 100] as [number, number], // 上部ヘッダー分の余白
+          paddingBottomRight: [50, 50] as [number, number], // 下部ボタン分の余白
+          animate: true,
+          duration: 1.0,
+          maxZoom: 18 // 最大ズームレベル制限
+        };
+        
+        mapRef.current.fitBounds(bounds, paddingOptions);
+        
+        logger.debug('複数マーカーfitBounds', { 
+          markerCount: coordinates.length,
+          bounds: bounds.toBBoxString()
+        });
+        showInfo(`全員の位置を表示しました（${coordinates.length}人） 👥`);
+      }
+    } catch (error) {
+      logger.error('地図移動エラー', error);
+      showError('地図の移動中にエラーが発生しました。');
+    }
   };
 
   const handleShare = () => {
@@ -182,9 +333,9 @@ export default function MapView(props: MapViewProps = {}) {
     logger.debug('共有ボタン押下');
     
     navigator.clipboard.writeText(roomUrl).then(() => {
-      alert('招待リンクをコピーしました！');
+      showSuccess('招待リンクをコピーしました！みんなに送ってね 📋');
     }).catch(() => {
-      alert('コピーに失敗しました');
+      showError('コピーに失敗しました。ブラウザの設定をご確認ください。');
     });
     
     // 親コンポーネントに共有ボタンが押されたことを通知
@@ -214,6 +365,7 @@ export default function MapView(props: MapViewProps = {}) {
   const handleMessageSave = async () => {
     if (!roomId) {
       logger.error('roomId が存在しません');
+      showError('ルームIDが見つかりません。ページを再読み込みしてください。');
       return;
     }
 
@@ -226,14 +378,14 @@ export default function MapView(props: MapViewProps = {}) {
       if (success) {
         logger.debug('メッセージ更新成功');
         setShowMessageModal(false);
-        // 成功時はトースト通知（将来実装）
+        showSuccess('ひとことを更新しました！ 💬');
       } else {
         logger.error('メッセージ更新失敗');
-        alert('メッセージの更新に失敗しました。もう一度お試しください。');
+        showError('メッセージの更新に失敗しました。もう一度お試しください。');
       }
     } catch (error) {
       logger.error('メッセージ更新エラー', error);
-      alert('通信エラーが発生しました。ネットワーク環境をご確認ください。');
+      showError('通信エラーが発生しました。ネットワーク環境をご確認ください。');
     } finally {
       setMessageLoading(false);
     }
@@ -246,10 +398,58 @@ export default function MapView(props: MapViewProps = {}) {
   };
 
   const handleEditNickname = () => {
-    // TODO: ニックネーム編集モーダルを表示
     logger.debug('ニックネーム編集ボタン押下');
-    alert('ニックネーム編集機能（未実装）');
+    // 現在のニックネームを取得してモーダルに設定
+    const currentNickname = myMemberInfo?.nickname || '';
+    setEditingNickname(currentNickname);
     setShowMenu(false);
+    setShowNicknameModal(true);
+  };
+
+  const handleNicknameSave = async () => {
+    if (!roomId) {
+      logger.error('roomId が存在しません');
+      showError('ルームIDが見つかりません。ページを再読み込みしてください。');
+      return;
+    }
+
+    const trimmedNickname = editingNickname.trim();
+    if (!trimmedNickname) {
+      showError('ニックネームを入力してください。');
+      return;
+    }
+
+    if (trimmedNickname.length > 20) {
+      showError('ニックネームは20文字以下で入力してください。');
+      return;
+    }
+
+    logger.debug('ニックネーム保存開始', { nicknameLength: trimmedNickname.length });
+    setNicknameLoading(true);
+
+    try {
+      const success = await updateMyNickname(roomId, trimmedNickname);
+      
+      if (success) {
+        logger.debug('ニックネーム更新成功');
+        setShowNicknameModal(false);
+        showSuccess('ニックネームを変更しました！ ✨');
+      } else {
+        logger.error('ニックネーム更新失敗');
+        showError('ニックネームの変更に失敗しました。もう一度お試しください。');
+      }
+    } catch (error) {
+      logger.error('ニックネーム更新エラー', error);
+      showError('通信エラーが発生しました。ネットワーク環境をご確認ください。');
+    } finally {
+      setNicknameLoading(false);
+    }
+  };
+
+  const handleNicknameCancel = () => {
+    logger.debug('ニックネーム編集キャンセル');
+    setShowNicknameModal(false);
+    setEditingNickname('');
   };
 
   const handleExitRoom = () => {
@@ -261,6 +461,7 @@ export default function MapView(props: MapViewProps = {}) {
   const handleExitConfirm = async () => {
     if (!roomId) {
       logger.error('roomId が存在しません');
+      showError('ルームIDが見つかりません。ページを再読み込みしてください。');
       return;
     }
 
@@ -273,14 +474,18 @@ export default function MapView(props: MapViewProps = {}) {
       if (result.success) {
         logger.debug('ルーム退出成功、/goodbye へリダイレクト');
         setShowExitDialog(false);
-        navigate('/goodbye');
+        showSuccess('ルームから退出しました。おつかれさま！ 👋');
+        // 少し遅延してからリダイレクト（トーストを見せるため）
+        setTimeout(() => {
+          navigate('/goodbye');
+        }, 1500);
       } else {
         logger.error('ルーム退出失敗', result.error);
-        alert(result.error || '退出に失敗しました。もう一度お試しください。');
+        showError(result.error || '退出に失敗しました。もう一度お試しください。');
       }
     } catch (error) {
       logger.error('ルーム退出処理エラー', error);
-      alert('通信エラーが発生しました。ネットワーク環境をご確認ください。');
+      showError('通信エラーが発生しました。ネットワーク環境をご確認ください。');
     } finally {
       setExitLoading(false);
     }
@@ -390,12 +595,75 @@ export default function MapView(props: MapViewProps = {}) {
         </div>
       )}
 
+      {/* ニックネーム編集モーダル */}
+      {showNicknameModal && (
+        <div 
+          className="message-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.4)',
+            zIndex: 1500,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div className="message-modal">
+            <div className="message-modal-header">
+              <h3>✏️ 名前を変更</h3>
+            </div>
+            <div className="message-modal-content">
+              <p>新しいニックネームを入力してね！</p>
+              <input
+                type="text"
+                className="message-input"
+                value={editingNickname}
+                onChange={(e) => setEditingNickname(e.target.value)}
+                placeholder="例：ぷるぷるペンギン、たい焼き道場"
+                maxLength={20}
+                disabled={nicknameLoading}
+                style={{ resize: 'none', height: 'auto', minHeight: '40px' }}
+              />
+              <div className="message-counter">
+                {editingNickname.length}/20文字
+              </div>
+            </div>
+            <div className="message-modal-buttons">
+              <button 
+                className="message-cancel-btn" 
+                onClick={handleNicknameCancel}
+                disabled={nicknameLoading}
+              >
+                やめる
+              </button>
+              <button 
+                className="message-save-btn" 
+                onClick={handleNicknameSave}
+                disabled={nicknameLoading}
+              >
+                {nicknameLoading ? '変更中...' : 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 実際の地図 */}
       <MapContainer
         {...({ center: position } as any)}
         {...({ zoom: 16 } as any)}
         style={{ height: '100%', width: '100%' }}
         {...({ zoomControl: false } as any)}
+        {...({ whenReady: (e: any) => {
+          mapRef.current = e.target;
+          logger.debug('地図インスタンス取得完了');
+        } } as any)}
       >
         <TileLayer
           {...({ url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" } as any)}
@@ -495,6 +763,12 @@ export default function MapView(props: MapViewProps = {}) {
           </div>
         </div>
       )}
+
+      {/* トースト通知システム */}
+      <ToastContainer 
+        toasts={toasts} 
+        onRemove={removeToast} 
+      />
     </div>
   );
 }
