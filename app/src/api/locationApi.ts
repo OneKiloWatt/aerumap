@@ -110,6 +110,59 @@ export async function writeLocation(roomId: string, position: [number, number]):
 }
 
 /**
+ * 自分のメッセージを更新
+ */
+export async function updateMyMessage(roomId: string, message: string): Promise<boolean> {
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      logger.error('updateMyMessage: 未認証ユーザー');
+      return false;
+    }
+
+    logger.debug('メッセージ更新開始', {
+      roomId: roomId.substring(0, 4) + '***',
+      uid: currentUser.uid.substring(0, 4) + '***',
+      messageLength: message.length
+    });
+
+    // バリデーション
+    if (!roomId || roomId.length !== 12) {
+      logger.error('updateMyMessage: 無効なroomId', { roomId });
+      return false;
+    }
+
+    if (message.length > 100) {
+      logger.error('updateMyMessage: メッセージが長すぎます', { length: message.length });
+      return false;
+    }
+
+    // メンバー情報を更新
+    const memberRef = firestoreDoc(db, `rooms/${roomId}/members`, currentUser.uid);
+    
+    logger.debug('Firestore メンバー情報更新開始', {
+      path: `rooms/${roomId}/members/${currentUser.uid}`,
+      messageLength: message.length
+    });
+
+    await setDoc(memberRef, {
+      message: message.trim(),
+      updatedAt: new Date()
+    }, { merge: true }); // 既存データを保持してマージ
+
+    logger.debug('メッセージ更新成功', { 
+      roomId: roomId.substring(0, 4) + '***',
+      messageLength: message.trim().length
+    });
+    
+    return true;
+  } catch (error) {
+    logger.error('メッセージ更新エラー', error);
+    return false;
+  }
+}
+
+/**
  * 自分の位置情報を削除（退出時）
  */
 export async function deleteMyLocation(roomId: string): Promise<boolean> {
