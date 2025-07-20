@@ -4,10 +4,14 @@ import { Share2 } from 'lucide-react';
 import L from 'leaflet';
 import './MapView.css';
 import { useGeolocation } from '../hooks/useGeolocation';
+import { useLocationSharing } from '../hooks/useLocationSharing';
+import { useMyMemberInfo } from '../hooks/useMyMemberInfo';
+import { testFirestoreConnection } from '../api/locationApi';
+import { logger } from '../utils/logger';
 
 // 型定義
 interface MarkerData {
-  id: number;
+  id: string;
   nickname: string;
   message?: string;
   lat: number;
@@ -17,8 +21,9 @@ interface MarkerData {
 }
 
 interface MapViewProps {
+  roomId?: string; // roomIdを追加
   onShareClick?: () => void;
-  onMapReady?: () => void; // 地図読み込み完了を通知
+  onMapReady?: () => void;
 }
 
 // カスタムアイコン設定（文字表示）
@@ -34,14 +39,14 @@ const createCustomIcon = (isMe: boolean, nickname: string) => {
 };
 
 export default function MapView(props: MapViewProps = {}) {
-  console.log('🗺️ MapView コンポーネント開始');
+  logger.debug('MapView コンポーネント開始');
   
-  const { onShareClick, onMapReady } = props;
+  const { roomId, onShareClick, onMapReady } = props;
   const [showMenu, setShowMenu] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   
   // 位置情報フック
-  console.log('🧭 useGeolocation フック呼び出し開始');
+  logger.debug('useGeolocation フック呼び出し開始');
   
   // オプションをメモ化して無限ループを防ぐ
   const geolocationOptions = useMemo(() => ({
@@ -54,38 +59,119 @@ export default function MapView(props: MapViewProps = {}) {
   
   const { position, loading, error } = useGeolocation(geolocationOptions);
   
-  console.log('📍 位置情報状態:', { position, loading, error });
+  // 位置情報共有フック
+  const { 
+    otherUsers, 
+    isSharing, 
+    lastSentAt, 
+    error: sharingError 
+  } = useLocationSharing({
+    roomId: roomId || '',
+    enabled: !!roomId && !!position && !loading,
+    position
+  });
+
+  // 自分のメンバー情報取得フック
+  const { 
+    memberInfo: myMemberInfo, 
+    loading: memberLoading, 
+    error: memberError 
+  } = useMyMemberInfo(roomId || '');
+  
+  // 位置情報は機密情報なので本番では詳細を出さない
+  logger.debug('位置情報状態', { 
+    hasPosition: !!position, 
+    loading, 
+    hasError: !!error,
+    isSharing,
+    otherUsersCount: otherUsers.length,
+    hasMyMemberInfo: !!myMemberInfo,
+    memberLoading
+  });
 
   // 地図読み込み完了時の処理
   React.useEffect(() => {
     if (!loading && position && !mapReady) {
-      console.log('🗺️ MapView: 地図読み込み完了処理開始');
+      logger.debug('地図読み込み完了処理開始');
       setMapReady(true);
       if (onMapReady) {
-        console.log('🔄 MapView: onMapReady コールバック実行');
+        logger.debug('onMapReady コールバック実行');
         onMapReady();
       }
     }
   }, [loading, position, mapReady, onMapReady]);
 
-  // 仮のマーカーデータ（現在地周辺）
-  const markers: MarkerData[] = position ? [
-    { id: 1, nickname: 'ギャルマスター', message: '渋谷駅にいるよ！', lat: position[0], lng: position[1], isMe: true },
-    { id: 2, nickname: 'たろう', message: 'もうすぐ着く〜', lat: position[0] - 0.0003, lng: position[1] + 0.0004, isMe: false, distance: '250m' },
-    { id: 3, nickname: 'みゆき', message: 'カフェで待ってます☕', lat: position[0] + 0.0004, lng: position[1] - 0.0004, isMe: false, distance: '180m' }
-  ] : [];
+  // Firestore接続テスト（デバッグ用）
+  React.useEffect(() => {
+    if (roomId && position && !loading) {
+      logger.debug('Firestore接続テスト実行');
+      testFirestoreConnection(roomId);
+    }
+  }, [roomId, position, loading]);
+
+  // 実際のマーカーデータ（実データ）
+  const markers: MarkerData[] = useMemo(() => {
+    const markerList: MarkerData[] = [];
+
+    // 自分のマーカー（実際のニックネーム使用）
+    if (position && myMemberInfo) {
+      markerList.push({
+        id: 'me',
+        nickname: myMemberInfo.nickname,
+        message: myMemberInfo.message || '現在地',
+        lat: position[0],
+        lng: position[1],
+        isMe: true
+      });
+      
+      logger.debug('自分のマーカー作成', {
+        nickname: myMemberInfo.nickname,
+        hasMessage: !!myMemberInfo.message
+      });
+    } else if (position && !myMemberInfo && !memberLoading) {
+      // フォールバック：メンバー情報がない場合
+      markerList.push({
+        id: 'me',
+        nickname: '自分',
+        message: '現在地',
+        lat: position[0],
+        lng: position[1],
+        isMe: true
+      });
+      
+      logger.debug('自分のマーカー作成（フォールバック）');
+    }
+
+    // 他のユーザーのマーカー
+    otherUsers.forEach(user => {
+      markerList.push({
+        id: user.uid,
+        nickname: user.nickname,
+        message: user.message,
+        lat: user.lat,
+        lng: user.lng,
+        isMe: false,
+        distance: user.distance
+      });
+    });
+
+    return markerList;
+  }, [position, otherUsers, myMemberInfo, memberLoading]);
 
   const handleFitBounds = () => {
     // TODO: 全ての人が画面内に収まるように地図の表示範囲を調整する
     // React-LeafletのuseMapフックを使用してマップインスタンスにアクセス
     // markersの座標を元にboundsを計算してfitBounds()を呼び出す
-    console.log('🎯 現在位置ボタンが押されました - 全員が画面内に収まるように調整予定');
+    logger.debug('現在位置ボタン押下');
   };
 
   const handleShare = () => {
-    // TODO: ルームの招待URLをクリップボードにコピー
-    const roomUrl = `${window.location.origin}/room/ABC123`; // 仮のURL
-    console.log('📋 共有ボタン押下 - URL:', roomUrl);
+    // 実際のルームの招待URLを生成
+    const roomUrl = roomId 
+      ? `${window.location.origin}/room/${roomId}`
+      : `${window.location.origin}/room/ABC123`; // フォールバック
+    
+    logger.debug('共有ボタン押下');
     
     navigator.clipboard.writeText(roomUrl).then(() => {
       alert('招待リンクをコピーしました！');
@@ -95,31 +181,31 @@ export default function MapView(props: MapViewProps = {}) {
     
     // 親コンポーネントに共有ボタンが押されたことを通知
     if (onShareClick) {
-      console.log('🔄 MapView: onShareClick コールバック実行');
+      logger.debug('onShareClick コールバック実行');
       onShareClick();
     }
   };
 
   const handleMenuToggle = () => {
-    console.log('📱 メニューボタン押下 - showMenu:', !showMenu);
+    logger.debug('メニューボタン押下', { newShowMenu: !showMenu });
     setShowMenu(!showMenu);
   };
 
   const handleEditNickname = () => {
     // TODO: ニックネーム編集モーダルを表示
-    console.log('✏️ ニックネーム編集ボタン押下');
+    logger.debug('ニックネーム編集ボタン押下');
     alert('ニックネーム編集機能（未実装）');
     setShowMenu(false);
   };
 
   const handleExitRoom = () => {
-    console.log('🚪 ルーム退出ボタン押下');
+    logger.debug('ルーム退出ボタン押下');
     alert('ルームから退出します');
     setShowMenu(false);
   };
 
   if (loading) {
-    console.log('⏳ MapView: ローディング中を表示');
+    logger.debug('位置情報ローディング中を表示');
     return (
       <div className="map-loading">
         <div>地図を読み込み中...</div>
@@ -128,7 +214,7 @@ export default function MapView(props: MapViewProps = {}) {
   }
 
   if (!position) {
-    console.log('❌ MapView: 位置情報なしエラーを表示', { error });
+    logger.warn('位置情報取得失敗', { hasError: !!error });
     return (
       <div className="map-loading">
         <div>位置情報を取得できませんでした</div>
@@ -137,10 +223,25 @@ export default function MapView(props: MapViewProps = {}) {
     );
   }
 
-  console.log('🎯 MapView: 正常な地図をレンダリング予定', { position, markersCount: markers.length });
+  // 位置情報共有エラーの表示
+  if (sharingError) {
+    logger.warn('位置情報共有エラー', { sharingError });
+  }
+
+  // メンバー情報エラーの表示
+  if (memberError) {
+    logger.warn('メンバー情報取得エラー', { memberError });
+  }
+
+  logger.debug('正常な地図をレンダリング', { 
+    markersCount: markers.length,
+    isSharing,
+    hasRoomId: !!roomId,
+    hasMyMemberInfo: !!myMemberInfo
+  });
 
   // JSXレンダリング開始ログ
-  console.log('🏗️ MapView: JSXレンダリング開始');
+  logger.debug('MapView JSXレンダリング開始');
 
   return (
     <div className="map-container">

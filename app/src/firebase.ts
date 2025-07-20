@@ -1,6 +1,7 @@
 // src/firebase.ts - デバッグ情報追加版
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, connectAuthEmulator, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY!,
@@ -11,6 +12,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // 認証状態の永続化を設定
 setPersistence(auth, browserLocalPersistence).catch((error) => {
@@ -19,6 +21,7 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
 
 if (process.env.REACT_APP_USE_FIREBASE_EMULATOR === 'true') {
   connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, 'localhost', 8080);
 }
 
 export const getFirebaseIdToken = async (): Promise<string> => {
@@ -38,4 +41,4 @@ export const getFirebaseIdToken = async (): Promise<string> => {
   return token;
 };
 
-export { auth };
+export { auth, db };

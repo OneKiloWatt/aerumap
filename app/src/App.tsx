@@ -1,8 +1,9 @@
-// src/App.tsx - デバッグ版
+// src/App.tsx
 import { useEffect, useState } from 'react';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import AppRouter from "./routes/AppRouter";
 import { auth } from './firebase';
+import { logger } from './utils/logger';
 import './index.css';
 
 function App() {
@@ -11,27 +12,27 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('🔄 Firebase Auth状態変化:', {
-        uid: user?.uid,
+      logger.debug('Firebase Auth状態変化', {
+        hasUser: !!user,
         isAnonymous: user?.isAnonymous,
-        email: user?.email
+        hasEmail: !!user?.email
       });
 
       setUser(user);
 
       if (!user) {
-        console.log('🚀 匿名ログイン開始...');
+        logger.debug('匿名ログイン開始');
         signInAnonymously(auth)
           .then((result) => {
-            console.log('✅ 匿名ログイン成功:', result.user.uid);
+            logger.success('匿名ログイン成功');
             setAuthLoading(false);
           })
           .catch((err) => {
-            console.error('❌ 匿名ログイン失敗:', err);
+            logger.error('匿名ログイン失敗', err);
             setAuthLoading(false);
           });
       } else {
-        console.log('✅ 既存ユーザー確認:', user.uid);
+        logger.success('既存ユーザー確認');
         setAuthLoading(false);
       }
     });

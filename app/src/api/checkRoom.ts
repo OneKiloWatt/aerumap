@@ -1,5 +1,7 @@
 // src/api/checkRoom.ts
 
+import { logger } from '../utils/logger';
+
 export type CheckRoomResponse =
   | { ok: true; found: true; data: { exists: boolean; expired: boolean; isMember: boolean } }
   | { ok: true; found: false }
@@ -28,13 +30,13 @@ export async function checkRoom(roomId: string): Promise<CheckRoomResponse> {
       if (auth.currentUser) {
         const idToken = await auth.currentUser.getIdToken();
         headers.Authorization = `Bearer ${idToken}`;
-        console.log('🔍 checkRoom送信UID:', auth.currentUser.uid);
+        logger.debug('checkRoom認証付きで送信');
       } else {
-        console.log('⚠️ checkRoom: 未認証状態');
+        logger.debug('checkRoom未認証で送信');
       }
     } catch (authError) {
       // 認証エラーは無視（匿名でもcheckRoomは利用可能）
-      console.warn('認証トークン取得失敗（無視）:', authError);
+      logger.warn('認証トークン取得失敗（無視）', authError);
     }
 
     const response = await fetch(`${baseUrl}/checkRoom/${roomId}`, {
@@ -44,6 +46,7 @@ export async function checkRoom(roomId: string): Promise<CheckRoomResponse> {
 
     if (!response.ok) {
       const errorText = await response.text();
+      logger.error('checkRoom API失敗', { status: response.status });
       return { ok: false, error: `取得失敗: ${errorText}` };
     }
 
@@ -51,12 +54,19 @@ export async function checkRoom(roomId: string): Promise<CheckRoomResponse> {
     
     // exists=falseの場合は見つからなかった
     if (!data.exists) {
+      logger.debug('checkRoom: ルーム見つからず');
       return { ok: true, found: false };
     }
 
+    logger.api('checkRoom成功', { 
+      exists: data.exists, 
+      expired: data.expired, 
+      isMember: data.isMember 
+    });
+    
     return { ok: true, found: true, data };
   } catch (error) {
-    console.error('checkRoom API エラー:', error);
+    logger.error('checkRoom通信エラー', error);
     return { ok: false, error: error instanceof Error ? error.message : '通信エラー' };
   }
 }

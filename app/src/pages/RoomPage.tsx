@@ -1,10 +1,11 @@
 // src/pages/RoomPage.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import RoomJoinForm from '../components/RoomJoinForm';
 import MapView from '../components/MapView';
 import RoomCreatorWelcome from '../components/RoomCreatorWelcome';
 import Header from '../components/Header';
 import { checkRoom } from '../api/checkRoom';
+import { logger } from '../utils/logger';
 
 export default function RoomPage() {
   const [showJoinForm, setShowJoinForm] = useState(false);
@@ -70,8 +71,9 @@ export default function RoomPage() {
       });
       
       if (expired) {
-        setError('ルームの有効期限が切れています');
-        setIsLoading(false);
+        logger.warn('ルームの有効期限が切れています');
+        // 期限切れページにリダイレクト
+        window.location.href = '/expired';
         return;
       }
 
@@ -102,26 +104,27 @@ export default function RoomPage() {
     });
   }, []);
   
-  const handleJoinSubmit = (nickname: string) => {
-    console.log(`🎉 ルームに参加: ${nickname}`);
-    console.log('🔄 setShowJoinForm(false) を実行');
+  const handleJoinSubmit = useCallback((nickname: string) => {
+    logger.success(`ルームに参加: ${nickname}`);
     setShowJoinForm(false);
-    console.log('✅ handleJoinSubmit 完了');
-  };
+  }, []);
 
-  const handleJoinError = (errorMessage: string) => {
+  const handleJoinError = useCallback((errorMessage: string) => {
+    logger.error('ルーム参加エラー', errorMessage);
     setError(errorMessage);
-  };
+  }, []);
 
-  const handleMapReady = () => {
+  const handleMapReady = useCallback(() => {
     // 地図読み込み完了後、welcome表示フラグがtrueならwelcomeを表示
     if (shouldShowWelcome) {
+      logger.debug('地図読み込み完了、welcome表示');
       setShowCreatorWelcome(true);
     }
-  };
+  }, [shouldShowWelcome]);
 
-  const handleCreatorWelcomeComplete = () => {
+  const handleCreatorWelcomeComplete = useCallback(() => {
     // 吹き出しを閉じる
+    logger.debug('作成者ウェルカム完了');
     setShowCreatorWelcome(false);
     setShouldShowWelcome(false);
     
@@ -129,14 +132,14 @@ export default function RoomPage() {
     const url = new URL(window.location.href);
     url.searchParams.delete('creator');
     window.history.replaceState({}, '', url.toString());
-  };
+  }, []);
 
-  const handleShareClick = () => {
+  const handleShareClick = useCallback(() => {
     // 共有ボタンが押されたらツールチップを閉じる
     if (showCreatorWelcome) {
       handleCreatorWelcomeComplete();
     }
-  };
+  }, [showCreatorWelcome, handleCreatorWelcomeComplete]);
 
   // エラー状態の場合
   if (error) {
@@ -157,19 +160,18 @@ export default function RoomPage() {
   }
 
   // デバッグ用状態表示（開発時のみ）
-  console.log('🎯 RoomPage レンダリング状態:', {
+  logger.debug('RoomPage レンダリング状態', {
     showJoinForm,
     showCreatorWelcome,
     shouldShowWelcome,
     isLoading,
-    error,
-    roomId
+    hasError: !!error
   });
 
   return (
     <>
       {/* デバッグ用：実際の表示条件確認 */}
-      {console.log('🖥️ レンダリング分岐:', {
+      {logger.debug('レンダリング分岐', {
         'showJoinForm条件': showJoinForm,
         'RoomJoinForm表示': showJoinForm,
         '地図画面表示': !showJoinForm
@@ -177,7 +179,7 @@ export default function RoomPage() {
       
       {showJoinForm && (
         <>
-          {console.log('📝 RoomJoinForm をレンダリング中')}
+          {logger.debug('RoomJoinForm をレンダリング中')}
           <RoomJoinForm 
             roomId={roomId}
             onSubmit={handleJoinSubmit}
@@ -188,9 +190,10 @@ export default function RoomPage() {
       
       {!showJoinForm && (
         <>
-          {console.log('🗺️ MapView をレンダリング中')}
+          {logger.debug('MapView をレンダリング中')}
           <Header />
           <MapView 
+            roomId={roomId}
             onShareClick={handleShareClick}
             onMapReady={handleMapReady}
           />

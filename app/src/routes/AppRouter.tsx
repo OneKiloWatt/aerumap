@@ -5,6 +5,7 @@ import RoomPage from "../pages/RoomPage";
 import NoLocationPage from "../pages/NoLocationPage";
 import GoodbyePage from "../pages/GoodbyePage";
 import TermsPage from "../pages/TermsPage";
+import ExpiredPage from '../pages/ExpiredPage';
 
 export default function AppRouter() {
   return (
@@ -15,6 +16,7 @@ export default function AppRouter() {
         <Route path="/no-location" element={<NoLocationPage />} />
         <Route path="/goodbye" element={<GoodbyePage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="/expired" element={<ExpiredPage />} />
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </Router>

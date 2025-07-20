@@ -1,5 +1,7 @@
 // src/api/joinRoom.ts
 
+import { logger } from '../utils/logger';
+
 export type JoinRoomResponse =
   | { success: true; roomId: string; message?: string }
   | { success: false; error: string }
@@ -31,7 +33,7 @@ export async function joinRoom(roomId: string, nickname: string): Promise<JoinRo
       return { success: false, error: '認証が必要です' };
     }
 
-    console.log('🔍 joinRoom送信UID:', auth.currentUser.uid);
+    logger.debug('joinRoom API呼び出し開始');
     const idToken = await auth.currentUser.getIdToken();
 
     const response = await fetch(`${baseUrl}/joinRoom`, {
@@ -48,6 +50,7 @@ export async function joinRoom(roomId: string, nickname: string): Promise<JoinRo
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      logger.error('joinRoom API失敗', { status: response.status });
       return { 
         success: false, 
         error: errorData.error || `参加失敗 (${response.status})` 
@@ -57,12 +60,17 @@ export async function joinRoom(roomId: string, nickname: string): Promise<JoinRo
     const data = await response.json();
     
     if (data.success) {
+      logger.api('joinRoom成功', { 
+        hasRoomId: !!data.roomId,
+        hasMessage: !!data.message 
+      });
       return { 
         success: true, 
         roomId: data.roomId,
         message: data.message 
       };
     } else {
+      logger.error('joinRoom処理失敗', data.error);
       return { 
         success: false, 
         error: data.error || '参加に失敗しました' 
@@ -70,7 +78,7 @@ export async function joinRoom(roomId: string, nickname: string): Promise<JoinRo
     }
 
   } catch (error) {
-    console.error('joinRoom API エラー:', error);
+    logger.error('joinRoom通信エラー', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : '通信エラー' 
