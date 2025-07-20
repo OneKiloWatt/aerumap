@@ -1,7 +1,7 @@
 // src/hooks/useLocationSharing.ts
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { writeLocation, subscribeToLocations, calculateDistance, OtherUserLocation } from '../api/locationApi';
+import { writeLocation, subscribeToLocations, calculateDistance, updateMyMessage, OtherUserLocation } from '../api/locationApi';
 import { logger } from '../utils/logger';
 
 interface UseLocationSharingOptions {

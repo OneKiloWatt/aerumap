@@ -30,8 +30,12 @@ export default function RoomPage() {
     const currentRoomId = pathSegments[pathSegments.length - 1];
     
     if (!currentRoomId || currentRoomId.length !== 12) {
-      setError('無効なルームIDです');
-      setIsLoading(false);
+      // 無効なルームIDも期限切れページにリダイレクト
+      logger.warn('無効なルームID形式、期限切れページへリダイレクト', { 
+        roomId: currentRoomId,
+        length: currentRoomId?.length 
+      });
+      window.location.href = '/expired';
       return;
     }
 
@@ -56,8 +60,9 @@ export default function RoomPage() {
       }
       
       if (!res.found) {
-        setError('ルームが見つからないか期限切れです');
-        setIsLoading(false);
+        // 存在しないルームも期限切れページにリダイレクト
+        logger.warn('ルームが見つかりません、期限切れページへリダイレクト');
+        window.location.href = '/expired';
         return;
       }
       
@@ -78,10 +83,17 @@ export default function RoomPage() {
       }
 
       if (isCreator) {
-        // 作成者の場合：地図画面表示 + welcome表示フラグをセット
-        console.log('🎯 作成者として処理: showJoinForm=false, shouldShowWelcome=true');
-        setShouldShowWelcome(true);
-        setShowJoinForm(false);
+        if (isMember) {
+          // 作成者かつメンバー：地図画面 + welcome表示
+          console.log('🎯 作成者（既にメンバー）: 地図画面 + welcome');
+          setShouldShowWelcome(true);
+          setShowJoinForm(false);
+        } else {
+          // 作成者だがまだメンバーでない：参加フォーム → 地図画面 + welcome
+          console.log('🎯 作成者（未メンバー）: 参加フォーム → welcome');
+          setShowJoinForm(true);
+          setShouldShowWelcome(true); // 参加後にwelcomeを表示
+        }
       } else {
         if (isMember) {
           // 既存メンバーの場合：直接地図画面へ

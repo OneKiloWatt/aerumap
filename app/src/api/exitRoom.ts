@@ -29,7 +29,7 @@ export async function exitRoom(roomId: string): Promise<ExitRoomResponse> {
     const idToken = await auth.currentUser.getIdToken();
 
     const response = await fetch(`${baseUrl}/exitRoom`, {
-      method: 'POST',
+      method: 'DELETE', // POSTからDELETEに変更
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,

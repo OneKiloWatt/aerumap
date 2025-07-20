@@ -7,7 +7,7 @@ import './MapView.css';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useLocationSharing } from '../hooks/useLocationSharing';
 import { useMyMemberInfo } from '../hooks/useMyMemberInfo';
-import { testFirestoreConnection } from '../api/locationApi';
+import { testFirestoreConnection, updateMyMessage } from '../api/locationApi';
 import { exitRoom } from '../api/exitRoom';
 import { logger } from '../utils/logger';
 
@@ -47,6 +47,9 @@ export default function MapView(props: MapViewProps = {}) {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [editingMessage, setEditingMessage] = useState('');
+  const [messageLoading, setMessageLoading] = useState(false);
   const [exitLoading, setExitLoading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   
@@ -196,6 +199,52 @@ export default function MapView(props: MapViewProps = {}) {
     setShowMenu(!showMenu);
   };
 
+  const handleEditMessage = () => {
+    logger.debug('メッセージ編集ボタン押下');
+    // 現在のメッセージを取得してモーダルに設定
+    const currentMessage = myMemberInfo?.message || '';
+    setEditingMessage(currentMessage);
+    
+    // ポップアップを閉じてからモーダル表示
+    setTimeout(() => {
+      setShowMessageModal(true);
+    }, 100);
+  };
+
+  const handleMessageSave = async () => {
+    if (!roomId) {
+      logger.error('roomId が存在しません');
+      return;
+    }
+
+    logger.debug('メッセージ保存開始', { messageLength: editingMessage.length });
+    setMessageLoading(true);
+
+    try {
+      const success = await updateMyMessage(roomId, editingMessage);
+      
+      if (success) {
+        logger.debug('メッセージ更新成功');
+        setShowMessageModal(false);
+        // 成功時はトースト通知（将来実装）
+      } else {
+        logger.error('メッセージ更新失敗');
+        alert('メッセージの更新に失敗しました。もう一度お試しください。');
+      }
+    } catch (error) {
+      logger.error('メッセージ更新エラー', error);
+      alert('通信エラーが発生しました。ネットワーク環境をご確認ください。');
+    } finally {
+      setMessageLoading(false);
+    }
+  };
+
+  const handleMessageCancel = () => {
+    logger.debug('メッセージ編集キャンセル');
+    setShowMessageModal(false);
+    setEditingMessage('');
+  };
+
   const handleEditNickname = () => {
     // TODO: ニックネーム編集モーダルを表示
     logger.debug('ニックネーム編集ボタン押下');
@@ -283,6 +332,64 @@ export default function MapView(props: MapViewProps = {}) {
 
   return (
     <div className="map-container">
+      {/* メッセージ編集モーダル（最上位に移動） */}
+      {showMessageModal && (
+        <div 
+          className="message-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.4)',
+            zIndex: 1500,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div className="message-modal">
+            <div className="message-modal-header">
+              <h3>✏️ ひとこと編集</h3>
+            </div>
+            <div className="message-modal-content">
+              <p>みんなに伝えたいひとことを入力してね！</p>
+              <textarea
+                className="message-input"
+                value={editingMessage}
+                onChange={(e) => setEditingMessage(e.target.value)}
+                placeholder="例：電車で向かってます🚃、ちょっと遅れるかも🙏"
+                maxLength={100}
+                rows={3}
+                disabled={messageLoading}
+              />
+              <div className="message-counter">
+                {editingMessage.length}/100文字
+              </div>
+            </div>
+            <div className="message-modal-buttons">
+              <button 
+                className="message-cancel-btn" 
+                onClick={handleMessageCancel}
+                disabled={messageLoading}
+              >
+                やめる
+              </button>
+              <button 
+                className="message-save-btn" 
+                onClick={handleMessageSave}
+                disabled={messageLoading}
+              >
+                {messageLoading ? '保存中...' : 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 実際の地図 */}
       <MapContainer
         {...({ center: position } as any)}
@@ -315,7 +422,12 @@ export default function MapView(props: MapViewProps = {}) {
                 )}
                 <div className="popup-time">14:32更新</div>
                 {marker.isMe && (
-                  <button className="edit-message-btn">✏️ メッセージ編集</button>
+                  <button 
+                    className="edit-message-btn" 
+                    onClick={handleEditMessage}
+                  >
+                    ✏️ ひとこと編集
+                  </button>
                 )}
               </div>
             </Popup>
