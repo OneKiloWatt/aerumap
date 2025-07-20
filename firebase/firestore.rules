@@ -16,8 +16,9 @@ service cloud.firestore {
 
     // ===== メンバー登録・管理 =====
     match /rooms/{roomId}/members/{uid} {
-      // 読み取り：本人のみ
-      allow read: if request.auth.uid == uid;
+      // 🔧 修正：読み取り - 本人 または 同じルームのメンバー
+      allow read: if request.auth.uid == uid 
+                  || exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
       
       // 書き込み：本人のみ（参加登録用）
       allow create, update: if request.auth.uid == uid;

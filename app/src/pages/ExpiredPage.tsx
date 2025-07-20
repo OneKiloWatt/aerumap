@@ -1,12 +1,12 @@
-// src/pages/GoodbyePage.tsx
+// src/pages/ExpiredPage.tsx
 import React from 'react';
 
-export default function GoodbyePage() {
+export default function ExpiredPage() {
   const handleGoHome = () => {
     window.location.href = '/';
   };
 
-  const handleCreateNewRoom = () => {
+  const handleRequestNewRoom = () => {
     // 新しいルーム作成ページへ遷移
     window.location.href = '/?create=true';
   };
@@ -34,7 +34,7 @@ export default function GoodbyePage() {
           fontSize: '64px',
           marginBottom: '16px'
         }}>
-          👋
+          ⏰
         </div>
 
         {/* タイトル */}
@@ -44,7 +44,7 @@ export default function GoodbyePage() {
           marginBottom: '12px',
           fontWeight: 'bold'
         }}>
-          おつかれさま！
+          🕒 ルームの有効期限が切れちゃった！
         </h1>
 
         {/* 説明 */}
@@ -54,11 +54,11 @@ export default function GoodbyePage() {
           lineHeight: '1.5',
           marginBottom: '24px'
         }}>
-          ルームから退出したよ！<br />
-          位置情報もちゃんと削除されたから安心してね✨
+          このルームは作ってから3時間経ったから、<br />
+          セキュリティのため自動で使えなくなったよ。
         </p>
 
-        {/* 感謝メッセージ */}
+        {/* 対処案内 */}
         <div style={{
           background: '#f8f9fa',
           borderRadius: '8px',
@@ -72,7 +72,7 @@ export default function GoodbyePage() {
             marginBottom: '8px',
             fontWeight: 'bold'
           }}>
-            💝 ありがとう！
+            💡 どうすればいい？
           </h3>
           <p style={{
             fontSize: '14px',
@@ -80,8 +80,8 @@ export default function GoodbyePage() {
             margin: 0,
             lineHeight: '1.4'
           }}>
-            あえるまっぷを使ってくれてありがとう！<br />
-            また待ち合わせするときは使ってね〜
+            新しくルームを作って、<br />
+            あらためて招待リンクを友だちに送ってね！
           </p>
         </div>
 
@@ -92,7 +92,7 @@ export default function GoodbyePage() {
           gap: '12px'
         }}>
           <button
-            onClick={handleCreateNewRoom}
+            onClick={handleRequestNewRoom}
             style={{
               background: 'linear-gradient(45deg, #ff7f7f, #ff6b6b)',
               color: 'white',
@@ -147,8 +147,8 @@ export default function GoodbyePage() {
           lineHeight: '1.4'
         }}>
           <p style={{ margin: 0 }}>
-            ※ あなたの位置情報とメンバー情報は<br />
-            完全に削除されました 🗑️✨
+            ※ルームと位置情報は、作成から3時間で自動削除されるよ。<br />
+            データもちゃんと完全消去されるから安心してね！
           </p>
         </div>
       </div>

@@ -3,10 +3,15 @@ import React, { useState } from 'react';
 import './TopPageContent.css';
 import NicknameForm from './NicknameForm';
 import { useNavigate } from 'react-router-dom';
+import { createRoom } from '../api/createRoom';
+import { getAuth } from 'firebase/auth';
+import { auth } from '../firebase';
+
 
 export default function TopPageContent() {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const user = auth.currentUser;
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -16,10 +21,20 @@ export default function TopPageContent() {
     setShowModal(false);
   };
 
-  const handleNicknameSubmit = (nickname: string) => {
-    alert(`ルームを作成するよ！ニックネーム：${nickname}`);
-    setShowModal(false);
-    navigate('/room');
+  const handleNicknameSubmit = async (nickname: string) => {
+    try {
+      const user = getAuth().currentUser;
+      if (!user) throw new Error('未ログイン状態です');
+  
+      const idToken = await user.getIdToken();
+      const roomId = await createRoom(nickname, idToken);
+  
+      setShowModal(false);
+      navigate(`/room/${roomId}?creator=true`);
+    } catch (err) {
+      console.error('ルーム作成エラー:', err);
+      alert('ルーム作成に失敗しました😭');
+    }
   };
 
   return (
@@ -70,7 +85,7 @@ export default function TopPageContent() {
               </p>
             </div>
             <div className="solution">
-              <h3>あいまっぷなら、そんな煩わしさとサヨナラ</h3>
+              <h3>あえるまっぷなら、そんな煩わしさとサヨナラ</h3>
               <p>
                 リアルタイムで位置情報を共有できるから、<br />
                 「今どこ？」の連絡は一切不要。<br />
@@ -88,19 +103,40 @@ export default function TopPageContent() {
           <div className="steps">
             <div className="step">
               <div className="step-number">1</div>
-              <div className="step-icon">📱</div>
+              <div className="step-icon">
+                <img 
+                  src="/images/steps/step-1-create.png" 
+                  alt="ルーム作成" 
+                  width="100" 
+                  height="100"
+                />
+              </div>
               <h3>ルーム作成</h3>
               <p>「ルームを作成する」ボタンをタップして、待ち合わせ用のルームを作成します。</p>
             </div>
             <div className="step">
               <div className="step-number">2</div>
-              <div className="step-icon">📤</div>
+              <div className="step-icon">
+                <img 
+                  src="/images/steps/step-2-invite.png" 
+                  alt="友達を招待" 
+                  width="100" 
+                  height="100"
+                />
+              </div>
               <h3>友達を招待</h3>
               <p>生成されたURLをLINEやメールで友達に送信。友達はURLをタップするだけで参加完了！</p>
             </div>
             <div className="step">
               <div className="step-number">3</div>
-              <div className="step-icon">🗺️</div>
+              <div className="step-icon">
+                <img 
+                  src="/images/steps/step-3-share.png" 
+                  alt="リアルタイム共有" 
+                  width="100" 
+                  height="100"
+                />
+              </div>
               <h3>リアルタイム共有</h3>
               <p>地図上でお互いの位置がリアルタイムで表示。もう「今どこ？」の連絡は不要です。</p>
             </div>
@@ -124,4 +160,3 @@ export default function TopPageContent() {
     </>
   );
 }
-
