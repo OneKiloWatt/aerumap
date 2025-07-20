@@ -295,3 +295,154 @@
     justify-content: flex-start; /* 左寄せ */
   }
 }
+
+.exit-dialog {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideUpFadeIn 0.3s ease-out;
+}
+
+.exit-dialog-header {
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.exit-dialog-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #FF6B6B; /* DESIGN.mdのコーラルレッド */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exit-dialog-content {
+  padding: 20px 24px;
+  line-height: 1.6;
+}
+
+.exit-dialog-content p {
+  margin: 0 0 12px 0;
+  color: #333; /* DESIGN.mdのダークグレー */
+  font-size: 16px; /* DESIGN.mdの本文サイズ */
+}
+
+.exit-dialog-content p:last-child {
+  margin-bottom: 0;
+  font-weight: bold;
+  color: #FF6B6B; /* DESIGN.mdのコーラルレッド */
+}
+
+.exit-dialog-buttons {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.exit-cancel-btn {
+  background: #F5F2EB; /* DESIGN.mdの薄いベージュ */
+  color: #666; /* DESIGN.mdのミディアムグレー */
+  border: 1px solid #D2B48C; /* DESIGN.mdのベージュ */
+  border-radius: 50px; /* DESIGN.mdルール準拠 */
+  padding: 12px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.exit-cancel-btn:hover:not(:disabled) {
+  background: #D2B48C; /* DESIGN.mdのベージュ */
+  transform: translateY(-2px); /* DESIGN.mdのホバー演出 */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.exit-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.exit-confirm-btn {
+  background: linear-gradient(45deg, #FF6B6B, #FF8E8E); /* DESIGN.mdのコーラルレッド */
+  color: white;
+  border: none;
+  border-radius: 50px; /* DESIGN.mdルール準拠 */
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.exit-confirm-btn:hover:not(:disabled) {
+  background: linear-gradient(45deg, #FF8E8E, #FF6B6B);
+  transform: translateY(-2px); /* DESIGN.mdのホバー演出 */
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.exit-confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
+
+/* ダイアログアニメーション */
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 退出ダイアログのスマホ対応 */
+@media (max-width: 768px) {
+  .exit-dialog {
+    max-width: 340px;
+    width: 95%;
+  }
+  
+  .exit-dialog-header {
+    padding: 20px 20px 14px 20px;
+  }
+  
+  .exit-dialog-header h3 {
+    font-size: 16px;
+  }
+  
+  .exit-dialog-content {
+    padding: 16px 20px;
+  }
+  
+  .exit-dialog-content p {
+    font-size: 14px; /* スマホでは少し小さく */
+  }
+  
+  .exit-dialog-buttons {
+    padding: 14px 20px 20px 20px;
+    flex-direction: column;
+  }
+  
+  .exit-cancel-btn,
+  .exit-confirm-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 15px;
+    min-width: auto;
+  }
+}

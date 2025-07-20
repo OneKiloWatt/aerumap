@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Share2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import './MapView.css';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useLocationSharing } from '../hooks/useLocationSharing';
 import { useMyMemberInfo } from '../hooks/useMyMemberInfo';
 import { testFirestoreConnection } from '../api/locationApi';
+import { exitRoom } from '../api/exitRoom';
 import { logger } from '../utils/logger';
 
 // 型定義
@@ -42,7 +44,10 @@ export default function MapView(props: MapViewProps = {}) {
   logger.debug('MapView コンポーネント開始');
   
   const { roomId, onShareClick, onMapReady } = props;
+  const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const [exitLoading, setExitLoading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   
   // 位置情報フック
@@ -200,8 +205,41 @@ export default function MapView(props: MapViewProps = {}) {
 
   const handleExitRoom = () => {
     logger.debug('ルーム退出ボタン押下');
-    alert('ルームから退出します');
     setShowMenu(false);
+    setShowExitDialog(true);
+  };
+
+  const handleExitConfirm = async () => {
+    if (!roomId) {
+      logger.error('roomId が存在しません');
+      return;
+    }
+
+    logger.debug('退出確認ダイアログで確認ボタン押下');
+    setExitLoading(true);
+
+    try {
+      const result = await exitRoom(roomId);
+      
+      if (result.success) {
+        logger.debug('ルーム退出成功、/goodbye へリダイレクト');
+        setShowExitDialog(false);
+        navigate('/goodbye');
+      } else {
+        logger.error('ルーム退出失敗', result.error);
+        alert(result.error || '退出に失敗しました。もう一度お試しください。');
+      }
+    } catch (error) {
+      logger.error('ルーム退出処理エラー', error);
+      alert('通信エラーが発生しました。ネットワーク環境をご確認ください。');
+    } finally {
+      setExitLoading(false);
+    }
+  };
+
+  const handleExitCancel = () => {
+    logger.debug('退出確認ダイアログでキャンセル');
+    setShowExitDialog(false);
   };
 
   if (loading) {
@@ -311,6 +349,37 @@ export default function MapView(props: MapViewProps = {}) {
             <button className="menu-item exit-btn" onClick={handleExitRoom}>
               🚪 ルームから退出する
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 退出確認ダイアログ（DESIGN.mdルール準拠版） */}
+      {showExitDialog && (
+        <div className="menu-overlay">
+          <div className="exit-dialog">
+            <div className="exit-dialog-header">
+              <h3>⚠️ ほんとにルームを抜けちゃう？</h3>
+            </div>
+            <div className="exit-dialog-content">
+              <p>ルームから抜けると、あなたの位置はみんなから見えなくなるよ。</p>
+              <p><strong>※あとから元に戻すことはできないから注意してね！</strong></p>
+            </div>
+            <div className="exit-dialog-buttons">
+              <button 
+                className="exit-cancel-btn" 
+                onClick={handleExitCancel}
+                disabled={exitLoading}
+              >
+                やっぱりやめる
+              </button>
+              <button 
+                className="exit-confirm-btn" 
+                onClick={handleExitConfirm}
+                disabled={exitLoading}
+              >
+                {exitLoading ? '抜けてる...' : 'うん、抜ける'}
+              </button>
+            </div>
           </div>
         </div>
       )}

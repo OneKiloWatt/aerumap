@@ -273,9 +273,6 @@ export function subscribeToLocations(
   return unsubscribe;
 }
 
-/**
- * Firestore接続テスト（デバッグ用）
- */
 export async function testFirestoreConnection(roomId: string): Promise<void> {
   try {
     logger.debug('Firestore接続テスト開始');
