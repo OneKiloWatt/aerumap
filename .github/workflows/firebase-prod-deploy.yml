@@ -23,6 +23,10 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Prepare firebase.json
+        working-directory: ./firebase
+        run: cp firebase.json.prod firebase.json
+
       - name: Deploy to Firebase (prod)
         working-directory: ./firebase
         run: |
