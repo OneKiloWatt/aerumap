@@ -1,18 +1,12 @@
 name: Deploy to Firebase (Prod)
 
 on:
-  workflow_run:
-    workflows: ["Build React App"]  
-    types:
-      - completed
-
     push: #テスト用
     branches:
       - goto
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.head_branch == 'goto' }}
     runs-on: ubuntu-latest
 
     steps:
