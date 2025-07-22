@@ -1,8 +1,8 @@
 name: Deploy to Firebase (Prod)
 
 on:
-    push: #テスト用
-    branches:
+    push:
+      branches:
       - goto
 
 jobs:
