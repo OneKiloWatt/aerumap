@@ -1,11 +1,10 @@
 name: Deploy to Firebase (Prod)
 
 on:
-  push:
-    branches:
-      - goto
-    paths:
-      - 'firebase/**'
+  workflow_run:
+    workflows: ["Build React App"]  
+    types:
+      - completed
 
 jobs:
   deploy:
