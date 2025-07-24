@@ -1,11 +1,24 @@
 {
-  "hosting": {
-    "public": "hosting/build"
-  },
   "functions": {
     "source": "functions"
   },
-  "firestore": {
-    "rules": "firestore.rules"
+  "emulators": {
+    "auth": {
+      "port": 9199,
+      "host": "0.0.0.0"
+    },
+    "firestore": {
+      "port": 8085,
+      "host": "0.0.0.0"
+    },
+    "functions": {
+      "port": 5002,
+      "host": "0.0.0.0"
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4001,
+      "host": "0.0.0.0"
+    }
   }
 }

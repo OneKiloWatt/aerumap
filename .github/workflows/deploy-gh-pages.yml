@@ -1,0 +1,34 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # ← 要件定義で「main に push」と書かれていた
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./app  # ← 要件定義で「対象：app/ ディレクトリ」
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.js をセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 依存関係をインストール（yarn）
+        run: yarn install  # ← 要件定義のコマンドに沿って yarn を使用
+
+      - name: ビルド（yarn build）
+        run: yarn build  # ← 明示しておくと読みやすい
+
+      - name: GitHub Pages にデプロイ
+        run: npm run deploy  # ← 中で `gh-pages` に push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
