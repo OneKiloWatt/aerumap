@@ -1,40 +1,31 @@
-name: Deploy to GitHub Pages
-
 on:
   push:
     branches:
-      - goto 
+      - goto
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: ./app
 
     steps:
-      - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Node.js をセットアップ
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Git の author 情報を設定
+      - run: yarn install
+
+      - run: yarn build
+
+      - name: Git の author 情報を事前に設定
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: 依存関係をインストール（yarn）
-        run: yarn install
-
-      - name: ビルド（yarn build）
-        run: yarn build
-
-      - name: GitHub Pages にデプロイ（直実行）
+      - name: GitHub Pages にデプロイ
         run: |
-          npx gh-pages -d build \
-            -u "github-actions[bot] <github-actions[bot]@users.noreply.github.com>" \
-            --repo "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/OneKiloWatt/aerumap.git"
+          npx gh-pages -d build --repo "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/OneKiloWatt/aerumap.git"
