@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # ← 要件定義で「main に push」と書かれていた
+      - goto 
 
 jobs:
   deploy:
@@ -11,7 +11,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./app  # ← 要件定義で「対象：app/ ディレクトリ」
+        working-directory: ./app
 
     steps:
       - name: リポジトリをチェックアウト
@@ -23,12 +23,12 @@ jobs:
           node-version: 20
 
       - name: 依存関係をインストール（yarn）
-        run: yarn install  # ← 要件定義のコマンドに沿って yarn を使用
+        run: yarn install
 
       - name: ビルド（yarn build）
-        run: yarn build  # ← 明示しておくと読みやすい
+        run: yarn build
 
       - name: GitHub Pages にデプロイ
-        run: npm run deploy  # ← 中で `gh-pages` に push
+        run: npm run deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
