@@ -22,6 +22,11 @@ jobs:
         with:
           node-version: 20
 
+      - name: Git の author 情報を設定
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: 依存関係をインストール（yarn）
         run: yarn install
 
