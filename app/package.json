@@ -20,7 +20,7 @@
   "scripts": {
     "start": "react-scripts start",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build -u \\\"github-actions[bot] <github-actions[bot]@users.noreply.github.com>\\\" --repo \\\"https://x-access-token:${GITHUB_TOKEN}@github.com/OneKiloWatt/aerumap.git\\\"",
+    "deploy": "gh-pages -d build -u github-actions[bot] <github-actions[bot]@users.noreply.github.com> --repo https://x-access-token:${GITHUB_TOKEN}@github.com/OneKiloWatt/aerumap.git",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
