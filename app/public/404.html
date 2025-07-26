@@ -1,26 +1,24 @@
-// 代替案：HashRouterを使用（URLに#が付く）
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import TopPage from "../pages/TopPage";
-import RoomPage from "../pages/RoomPage";
-import NoLocationPage from "../pages/NoLocationPage";
-import GoodbyePage from "../pages/GoodbyePage";
-import TermsPage from "../pages/TermsPage";
-import ExpiredPage from '../pages/ExpiredPage';
-
-export default function AppRouter() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<TopPage />} />
-        <Route path="/room/:roomId" element={<RoomPage />} />
-        <Route path="/no-location" element={<NoLocationPage />} />
-        <Route path="/goodbye" element={<GoodbyePage />} />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/expired" element={<ExpiredPage />} />
-        <Route path="*" element={<div>404 Not Found</div>} />
-      </Routes>
-    </Router>
-  );
-}
-
-// この場合URLは https://onekilowatt.github.io/aerumap/#/room/xxx となります
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script type="text/javascript">
+    // GitHub Pages SPA hack for handling direct URL access
+    // pathSegmentsToKeepを1に設定（/aerumap/ の部分を保持）
+    var pathSegmentsToKeep = 1;
+    
+    var l = window.location;
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+      l.hash
+    );
+  </script>
+</head>
+<body>
+  <p>リダイレクト中...</p>
+</body>
+</html>
