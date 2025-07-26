@@ -18,10 +18,12 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
+      - name: Install dependencies in actions/
+        working-directory: actions
         run: npm ci
 
       - name: Run cleanup script
+        working-directory: actions
         env:
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: node script/room-cleanup.js
