@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compiled JavaScript files
+lib/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Firebase Functions specific
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+functions-debug.log
+pubsub-debug.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Firebase emulator data
+firestore_export/
+auth_export/
