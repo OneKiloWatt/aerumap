@@ -1,13 +1,9 @@
 name: Deploy to GitHub Pages
-
 on:
   push:
     branches: [ goto ]
-
-# 重要: 権限を追加
 permissions:
   contents: write
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -23,7 +19,6 @@ jobs:
           
       - name: Debug Environment Variables
         run: |
-          # 環境変数が設定されているかを安全にチェック
           if [ -z "$REACT_APP_FIREBASE_API_KEY" ]; then
             echo "Error: REACT_APP_FIREBASE_API_KEY is not set"
             exit 1
@@ -48,10 +43,6 @@ jobs:
             echo "Error: REACT_APP_FIREBASE_APP_ID is not set"
             exit 1
           fi
-          if [ -z "$REACT_APP_FIREBASE_MEASUREMENT_ID" ]; then
-            echo "Error: REACT_APP_FIREBASE_MEASUREMENT_ID is not set"
-            exit 1
-          fi
           echo "All Firebase environment variables are set correctly"
         env:
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
@@ -72,7 +63,8 @@ jobs:
           cd app
           npm run build
         env:
-          CI: false  # ESLintの警告をエラーとして扱わない
+          CI: false
+          PUBLIC_URL: https://onekilowatt.github.io/aerumap
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
           REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
           REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}

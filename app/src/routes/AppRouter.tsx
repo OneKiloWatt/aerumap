@@ -1,4 +1,3 @@
-// src/routes/AppRouter.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TopPage from "../pages/TopPage";
 import RoomPage from "../pages/RoomPage";
@@ -9,9 +8,8 @@ import ExpiredPage from '../pages/ExpiredPage';
 
 export default function AppRouter() {
   // GitHub Pagesのbasename設定
-  // カスタムドメインの場合は空文字、リポジトリ名がパスに含まれる場合はリポジトリ名を設定
   const basename = process.env.NODE_ENV === 'production' 
-    ? process.env.PUBLIC_URL || '/aerumap'
+    ? '/aerumap'
     : '';
 
   return (
