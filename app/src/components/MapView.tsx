@@ -280,12 +280,12 @@ React.useEffect(() => {
 
         console.log('🎉 すべてのテスト完了');
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('🚨 デバッグエラー発生:', error);
         console.error('エラー詳細:', {
-          message: error.message,
-          code: error.code,
-          stack: error.stack
+          message: error?.message,
+          code: error?.code,
+          stack: error?.stack
         });
       }
     };
