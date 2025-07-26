@@ -11,10 +11,11 @@ const db = admin.firestore();
 
 (async () => {
   const now = Date.now();
+  const threshold = now - 10 * 60 * 1000; // 10分前（ミリ秒）
   const expiredRooms = await db.collection('rooms')
-    .where('expiresAt', '<=', now)
+    .where('expiresAt', '<=', threshold)
     .get();
-
+  
   const batch = db.batch();
   for (const doc of expiredRooms.docs) {
     const roomRef = doc.ref;
