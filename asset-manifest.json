@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/static/css/main.e81022b6.css",
-    "main.js": "/static/js/main.576f1265.js",
-    "index.html": "/index.html",
-    "main.e81022b6.css.map": "/static/css/main.e81022b6.css.map",
-    "main.576f1265.js.map": "/static/js/main.576f1265.js.map"
+    "main.css": "https://onekilowatt.github.io/aerumap/static/css/main.e81022b6.css",
+    "main.js": "https://onekilowatt.github.io/aerumap/static/js/main.ca86a948.js",
+    "index.html": "https://onekilowatt.github.io/aerumap/index.html",
+    "main.e81022b6.css.map": "https://onekilowatt.github.io/aerumap/static/css/main.e81022b6.css.map",
+    "main.ca86a948.js.map": "https://onekilowatt.github.io/aerumap/static/js/main.ca86a948.js.map"
   },
   "entrypoints": [
     "static/css/main.e81022b6.css",
-    "static/js/main.576f1265.js"
+    "static/js/main.ca86a948.js"
   ]
 }
