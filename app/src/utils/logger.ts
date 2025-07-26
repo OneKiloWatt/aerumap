@@ -10,11 +10,12 @@ class Logger {
   }
 
   private shouldLog(level: LogLevel): boolean {
+    // 🔧 デバッグ用：本番環境でも全てのログを出力
     // 本番環境では warn と error のみ
-    if (!this.isDevelopment) {
-      return level === 'warn' || level === 'error';
-    }
-    return true;
+    // if (!this.isDevelopment) {
+    //   return level === 'warn' || level === 'error';
+    // }
+    return true; // 👈 すべてのログを出力
   }
 
   private sanitizeData(data: any): any {
@@ -78,12 +79,15 @@ class Logger {
 
   // API呼び出しログ（開発時のみ、本番では最小限）
   api(message: string, data?: any): void {
-    if (this.isDevelopment) {
-      console.log(`🌐 ${message}`, this.sanitizeData(data));
-    } else {
-      // 本番では成功/失敗のみ
-      console.log(`🌐 ${message}`);
-    }
+    // 🔧 デバッグ用：本番でも詳細ログを出力
+    console.log(`🌐 ${message}`, this.sanitizeData(data));
+    
+    // if (this.isDevelopment) {
+    //   console.log(`🌐 ${message}`, this.sanitizeData(data));
+    // } else {
+    //   // 本番では成功/失敗のみ
+    //   console.log(`🌐 ${message}`);
+    // }
   }
 }
 
