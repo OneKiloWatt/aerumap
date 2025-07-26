@@ -31,13 +31,13 @@ async function logAccess(ip: string, uid: string, roomId: string, success: boole
  */
 export const exitRoom = functions.https.onRequest(async (req: Request, res: Response) => {
   // CORS設定
-  const allowedOrigins = ['http://localhost:3000', 'https://aimap.app'];
+  const allowedOrigins = ['http://localhost:3000', 'https://onekilowatt.github.io'];
   const origin = req.headers.origin || '';
 
   if (allowedOrigins.includes(origin)) {
     res.set('Access-Control-Allow-Origin', origin);
   } else {
-    res.set('Access-Control-Allow-Origin', 'https://aimap.app'); // fallback>（←念のため）
+    res.set('Access-Control-Allow-Origin', ''https://onekilowatt.github.io''); // fallback>（←念のため）
   }
   res.set('Access-Control-Allow-Methods', 'DELETE');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
