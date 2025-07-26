@@ -3,7 +3,7 @@ name: Deploy to Firebase (Prod)
 on:
     push:
       branches:
-      - main
+      - goto
 
 jobs:
   deploy:
