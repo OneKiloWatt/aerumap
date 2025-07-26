@@ -1,0 +1,85 @@
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: [ main ]
+permissions:
+  contents: write
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Debug Firebase Environment Variables
+        run: |
+          echo "🔍 Firebase設定確認:"
+          if [ -z "$REACT_APP_API_KEY" ]; then
+            echo "❌ REACT_APP_API_KEY が設定されていません"
+            exit 1
+          else
+            echo "✅ REACT_APP_API_KEY: 設定済み (${#REACT_APP_API_KEY}文字)"
+          fi
+          
+          if [ -z "$REACT_APP_AUTH_DOMAIN" ]; then
+            echo "❌ REACT_APP_AUTH_DOMAIN が設定されていません"
+            exit 1
+          else
+            echo "✅ REACT_APP_AUTH_DOMAIN: $REACT_APP_AUTH_DOMAIN"
+          fi
+          
+          if [ -z "$REACT_APP_PROJECT_ID" ]; then
+            echo "❌ REACT_APP_PROJECT_ID が設定されていません"
+            exit 1
+          else
+            echo "✅ REACT_APP_PROJECT_ID: $REACT_APP_PROJECT_ID"
+          fi
+          
+          if [ -z "$REACT_APP_APP_ID" ]; then
+            echo "❌ REACT_APP_APP_ID が設定されていません"
+            exit 1
+          else
+            echo "✅ REACT_APP_APP_ID: $REACT_APP_APP_ID"
+          fi
+          
+          echo "✅ すべてのFirebase環境変数が正しく設定されています"
+        env:
+          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+          REACT_APP_AUTH_DOMAIN: ${{ secrets.REACT_APP_AUTH_DOMAIN }}
+          REACT_APP_PROJECT_ID: ${{ secrets.REACT_APP_PROJECT_ID }}
+          REACT_APP_APP_ID: ${{ secrets.REACT_APP_APP_ID }}
+          
+      - name: Install Dependencies
+        run: |
+          cd app
+          npm ci
+          
+      - name: Build for Production
+        run: |
+          cd app
+          echo "🔨 本番環境用ビルド開始 (PUBLIC_URL=/aerumap)"
+          PUBLIC_URL=/aerumap npm run build
+          echo "✅ ビルド完了"
+        env:
+          CI: false
+          # エミュレーターを無効にして本番Firebase使用
+          REACT_APP_USE_FIREBASE_EMULATOR: false
+          # 既存firebase.tsで使用している環境変数名
+          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+          REACT_APP_AUTH_DOMAIN: ${{ secrets.REACT_APP_AUTH_DOMAIN }}
+          REACT_APP_PROJECT_ID: ${{ secrets.REACT_APP_PROJECT_ID }}
+          REACT_APP_APP_ID: ${{ secrets.REACT_APP_APP_ID }}
+          # API Base URL（必要に応じて）
+          REACT_APP_API_BASE_URL: https://us-central1-aerumap.cloudfunctions.net
+        
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: app/build
+          branch: gh-pages

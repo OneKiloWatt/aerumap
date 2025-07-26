@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "room-api-project-52a11",
+    "prod": "aerumap"
+  },
+  "targets": {},
+  "etags": {}
+}

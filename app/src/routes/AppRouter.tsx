@@ -8,8 +8,13 @@ import TermsPage from "../pages/TermsPage";
 import ExpiredPage from '../pages/ExpiredPage';
 
 export default function AppRouter() {
+  // 相対パスビルドの場合のbasename設定
+  const basename = process.env.NODE_ENV === 'production' 
+    ? '/aerumap'
+    : '';
+
   return (
-    <Router>
+    <Router basename={basename}>
       <Routes>
         <Route path="/" element={<TopPage />} />
         <Route path="/room/:roomId" element={<RoomPage />} />
@@ -22,4 +27,3 @@ export default function AppRouter() {
     </Router>
   );
 }
-

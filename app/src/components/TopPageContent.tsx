@@ -46,16 +46,13 @@ export default function TopPageContent() {
             <div className="hero-text">
               <h1>「今どこ？」のやり取り、<br />もうおしまい</h1>
               <p>スマホ一つで、友達の居場所がリアルタイムでわかっちゃう。</p>
-              <a
-                href="#"
+              <button
+                type="button"
                 className="cta-button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleOpenModal();
-                }}
+                onClick={handleOpenModal}
               >
-                ルームを作成する
-              </a>
+              ルームを作成する
+              </button>
             </div>
             <div className="hero-character">
               <img src="images/map.webp" alt="地図アプリのイメージ" />
@@ -152,9 +149,13 @@ export default function TopPageContent() {
             無料で使えて、アプリのインストールも不要。<br />
             ブラウザがあれば、今すぐ始められます。
           </p>
-          <a href="#" className="cta-button" onClick={handleOpenModal}>
-            ルームを作成する
-          </a>
+          <button
+            type="button"
+            className="cta-button"
+            onClick={handleOpenModal}
+          >
+          ルームを作成する
+          </button>
         </div>
       </section>
     </>
