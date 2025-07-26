@@ -5,50 +5,57 @@ service cloud.firestore {
     // ===== ルーム情報（メタ情報） =====
     match /rooms/{roomId} {
       // 読み取り：そのルームのメンバーのみ
-      allow read: if exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
+      allow read: if request.auth != null && 
+                     exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
       
-      // 作成・更新・削除：禁止（Cloud Functions経由のみ）
-      // ルーム作成は /api/createRoom 経由で強制
-      allow create, update, delete: if false;
+      // 作成：認証済みユーザーのみ（ルーム作成用）
+      allow create: if request.auth != null;
+      
+      // 更新・削除：禁止（管理機能は別途Admin SDK経由）
+      allow update, delete: if false;
     }
 
     // ===== メンバー登録・管理 =====
     match /rooms/{roomId}/members/{uid} {
       // 読み取り：本人 または 同じルームのメンバー（ニックネーム表示用）
-      allow read: if request.auth.uid == uid 
-                  || exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
+      allow read: if request.auth != null && 
+                     (request.auth.uid == uid || 
+                      exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid)));
       
-      // 作成：禁止（/api/joinRoom 経由のみ）
-      allow create: if false;
+      // 作成・更新：本人のみ（認証済み＋UIDが一致）
+      allow create, update: if request.auth != null && 
+                               request.auth.uid == uid;
       
-      // 更新：本人のみ（ニックネーム・メッセージ変更用）
-      allow update: if request.auth.uid == uid;
-      
-      // 削除：禁止（/api/exitRoom 経由のみ）
-      allow delete: if false;
+      // 削除：本人のみ（退出機能用）
+      allow delete: if request.auth != null && 
+                       request.auth.uid == uid;
     }
 
     // ===== 位置情報の共有 =====
     match /rooms/{roomId}/locations/{uid} {
-      // 読み取り：そのルームのメンバー全員
-      allow read: if exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
+      // 読み取り：そのルームのメンバーのみ
+      allow read: if request.auth != null && 
+                     exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
       
-      // 書き込み：本人のみ（なりすまし防止）
-      allow create, update: if request.auth.uid == uid;
+      // 作成・更新：本人のみ、かつそのルームのメンバーのみ
+      allow create, update: if request.auth != null && 
+                               request.auth.uid == uid && 
+                               exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
       
-      // 削除：禁止（/api/exitRoom 経由のみ）
-      allow delete: if false;
+      // 削除：本人のみ（退出時のクリーンアップ用）
+      allow delete: if request.auth != null && 
+                       request.auth.uid == uid;
     }
 
     // ===== レート制限管理（内部処理用） =====
     match /rateLimits/{document} {
-      // Cloud Functions からのみアクセス（Admin SDK）
+      // Admin SDK経由のみアクセス（Cloud Functions）
       allow read, write: if false;
     }
 
     // ===== アクセスログ（内部処理用） =====
     match /accessLogs/{document} {
-      // Cloud Functions からの書き込みのみ（Admin SDK）
+      // Admin SDK経由の書き込みのみ（Cloud Functions）
       allow write: if false;
       // 読み取りは禁止（プライバシー保護）
       allow read: if false;
