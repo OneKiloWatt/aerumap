@@ -75,9 +75,9 @@ async function logAccess(ip: string, roomId: string, success: boolean, error?: s
 }
 
 export const checkRoom = functions.https.onRequest(async (req: Request, res: Response) => {
-  const allowedOrigins = ['http://localhost:3000', 'https://aimap.app'];
+  const allowedOrigins = ['http://localhost:3000', 'https://onekilowatt.github.io'];
   const origin = req.headers.origin || '';
-  res.set('Access-Control-Allow-Origin', allowedOrigins.includes(origin) ? origin : 'https://aimap.app');
+  res.set('Access-Control-Allow-Origin', allowedOrigins.includes(origin) ? origin : 'https://onekilowatt.github.io');
   res.set('Access-Control-Allow-Methods', 'GET');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 

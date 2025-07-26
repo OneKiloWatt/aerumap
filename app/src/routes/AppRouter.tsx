@@ -1,4 +1,4 @@
-// src/routes/AppRouter.tsx
+// src/routes/AppRouter.tsx - BrowserRouter版（きれいなURL）
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TopPage from "../pages/TopPage";
 import RoomPage from "../pages/RoomPage";
@@ -8,10 +8,12 @@ import TermsPage from "../pages/TermsPage";
 import ExpiredPage from '../pages/ExpiredPage';
 
 export default function AppRouter() {
-  // 相対パスビルドの場合のbasename設定
+  // GitHub Pagesのbasename設定
   const basename = process.env.NODE_ENV === 'production' 
     ? '/aerumap'
     : '';
+
+  console.log('Using BrowserRouter with basename:', basename);
 
   return (
     <Router basename={basename}>

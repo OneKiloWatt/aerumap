@@ -120,7 +120,7 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
                 <strong>このページのリンクが信頼できる人から送られたものでなければ、参加しないでね！</strong>
               </p>
               <p>
-                このルームじゃ、あなたの現在地がリアルタイムで共有されるよ〜
+                このルームでは、あなたの現在地がリアルタイムで共有されるよ〜
               </p>
               <p>
                 詳しくは<a href="/terms" target="_blank" rel="noopener noreferrer">利用規約</a>へ。

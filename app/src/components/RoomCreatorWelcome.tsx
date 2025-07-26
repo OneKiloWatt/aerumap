@@ -1,6 +1,7 @@
 // src/components/RoomCreatorWelcome.tsx
 import React, { useEffect } from 'react';
 import './RoomCreatorWelcome.css';
+import { getImagePath } from '../utils/imageUtils';
 
 type Props = {
   onComplete: () => void;
@@ -30,7 +31,7 @@ export default function RoomCreatorWelcome({ onComplete }: Props) {
       <div className="tooltip-content">
         
         <div className="tooltip-character">
-          <img src="/images/map.webp" alt="あいまっぷキャラクター" />
+          <img src={getImagePath("/images/map.webp")} alt="あいまっぷキャラクター" />
         </div>
 
         <div className="tooltip-message">

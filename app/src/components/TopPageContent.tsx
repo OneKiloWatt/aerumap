@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { createRoom } from '../api/createRoom';
 import { getAuth } from 'firebase/auth';
 import { auth } from '../firebase';
-
+import { getImagePath } from '../utils/imageUtils';
 
 export default function TopPageContent() {
   const [showModal, setShowModal] = useState(false);
@@ -55,7 +55,7 @@ export default function TopPageContent() {
               </button>
             </div>
             <div className="hero-character">
-              <img src="images/map.webp" alt="地図アプリのイメージ" />
+              <img src={getImagePath("images/map.webp")} alt="地図アプリのイメージ" />
             </div>
           </div>
         </div>
@@ -102,7 +102,7 @@ export default function TopPageContent() {
               <div className="step-number">1</div>
               <div className="step-icon">
                 <img 
-                  src="/images/steps/step-1-create.png" 
+                  src={getImagePath("/images/steps/step-1-create.png")} 
                   alt="ルーム作成" 
                   width="100" 
                   height="100"
@@ -115,7 +115,7 @@ export default function TopPageContent() {
               <div className="step-number">2</div>
               <div className="step-icon">
                 <img 
-                  src="/images/steps/step-2-invite.png" 
+                  src={getImagePath("/images/steps/step-2-invite.png")} 
                   alt="友達を招待" 
                   width="100" 
                   height="100"
@@ -128,7 +128,7 @@ export default function TopPageContent() {
               <div className="step-number">3</div>
               <div className="step-icon">
                 <img 
-                  src="/images/steps/step-3-share.png" 
+                  src={getImagePath("/images/steps/step-3-share.png")} 
                   alt="リアルタイム共有" 
                   width="100" 
                   height="100"
