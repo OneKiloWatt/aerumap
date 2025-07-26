@@ -1,4 +1,4 @@
-// src/routes/AppRouter.tsx - HashRouter版
+// src/routes/AppRouter.tsx
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import TopPage from "../pages/TopPage";
 import RoomPage from "../pages/RoomPage";
@@ -8,6 +8,8 @@ import TermsPage from "../pages/TermsPage";
 import ExpiredPage from '../pages/ExpiredPage';
 
 export default function AppRouter() {
+  console.log('Using HashRouter - URLs will have # in them');
+  
   return (
     <Router>
       <Routes>
