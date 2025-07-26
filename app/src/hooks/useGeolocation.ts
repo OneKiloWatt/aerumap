@@ -24,11 +24,12 @@ export function useGeolocation(options: UseGeolocationOptions = {}): UseGeolocat
     enableHighAccuracy = true, 
     timeout = 10000, 
     maximumAge = 60000,
+    watchPosition = true, // 👈 デフォルトで位置監視を有効に
     fallbackPosition // デフォルト値を削除：undefined のまま
   } = options;
 
   useEffect(() => {
-    console.log('🧭 useGeolocation: フック開始');
+    console.log('🧭 useGeolocation: フック開始', { watchPosition });
     
     if (!navigator.geolocation) {
       console.log('❌ useGeolocation: Geolocation API がサポートされていません');
@@ -48,7 +49,12 @@ export function useGeolocation(options: UseGeolocationOptions = {}): UseGeolocat
 
     const handleSuccess = (pos: GeolocationPosition) => {
       const coordinates: [number, number] = [pos.coords.latitude, pos.coords.longitude];
-      console.log('✅ useGeolocation: 位置情報取得成功', coordinates);
+      const accuracy = pos.coords.accuracy;
+      console.log('✅ useGeolocation: 位置情報取得成功', {
+        coordinates,
+        accuracy: `${accuracy}m`,
+        timestamp: new Date(pos.timestamp).toLocaleTimeString()
+      });
       setPosition(coordinates);
       setError(null);
       setLoading(false);
@@ -83,19 +89,41 @@ export function useGeolocation(options: UseGeolocationOptions = {}): UseGeolocat
       setLoading(false);
     };
 
-    // 位置情報取得開始
-    console.log('📍 useGeolocation: getCurrentPosition 呼び出し');
-    navigator.geolocation.getCurrentPosition(
-      handleSuccess,
-      handleError,
-      {
-        enableHighAccuracy,
-        timeout,
-        maximumAge,
-      }
-    );
+    const geolocationOptions = {
+      enableHighAccuracy,
+      timeout,
+      maximumAge,
+    };
 
-  }, [enableHighAccuracy, timeout, maximumAge, fallbackPosition]);
+    let watchId: number | null = null;
+
+    if (watchPosition) {
+      // 👈 位置の変化を継続監視
+      console.log('📍 useGeolocation: watchPosition 開始');
+      watchId = navigator.geolocation.watchPosition(
+        handleSuccess,
+        handleError,
+        geolocationOptions
+      );
+    } else {
+      // 従来の1回のみの取得
+      console.log('📍 useGeolocation: getCurrentPosition 呼び出し');
+      navigator.geolocation.getCurrentPosition(
+        handleSuccess,
+        handleError,
+        geolocationOptions
+      );
+    }
+
+    // クリーンアップ関数
+    return () => {
+      if (watchId !== null) {
+        console.log('🛑 useGeolocation: watchPosition 停止');
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+
+  }, [enableHighAccuracy, timeout, maximumAge, watchPosition, fallbackPosition]);
 
   return { position, loading, error };
 }
