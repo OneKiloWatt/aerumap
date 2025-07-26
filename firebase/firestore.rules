@@ -7,24 +7,25 @@ service cloud.firestore {
       // 読み取り：そのルームのメンバーのみ
       allow read: if exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
       
-      // 書き込み：認証済みユーザーのみ（ルーム作成用）
-      allow create: if request.auth != null;
-      
-      // 更新・削除：禁止（Cloud Functions/GitHub Actions経由のみ）
-      allow update, delete: if false;
+      // 作成・更新・削除：禁止（Cloud Functions経由のみ）
+      // ルーム作成は /api/createRoom 経由で強制
+      allow create, update, delete: if false;
     }
 
     // ===== メンバー登録・管理 =====
     match /rooms/{roomId}/members/{uid} {
-      // 🔧 修正：読み取り - 本人 または 同じルームのメンバー
+      // 読み取り：本人 または 同じルームのメンバー（ニックネーム表示用）
       allow read: if request.auth.uid == uid 
                   || exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
       
-      // 書き込み：本人のみ（参加登録用）
-      allow create, update: if request.auth.uid == uid;
+      // 作成：禁止（/api/joinRoom 経由のみ）
+      allow create: if false;
       
-      // 削除：本人のみ（退出機能用）
-      allow delete: if request.auth.uid == uid;
+      // 更新：本人のみ（ニックネーム・メッセージ変更用）
+      allow update: if request.auth.uid == uid;
+      
+      // 削除：禁止（/api/exitRoom 経由のみ）
+      allow delete: if false;
     }
 
     // ===== 位置情報の共有 =====
@@ -35,20 +36,20 @@ service cloud.firestore {
       // 書き込み：本人のみ（なりすまし防止）
       allow create, update: if request.auth.uid == uid;
       
-      // 削除：本人のみ（退出時のクリーンアップ用）
-      allow delete: if request.auth.uid == uid;
+      // 削除：禁止（/api/exitRoom 経由のみ）
+      allow delete: if false;
     }
 
     // ===== レート制限管理（内部処理用） =====
     match /rateLimits/{document} {
-      // Cloud Functions からのみアクセス
-      allow read, write: if request.auth != null;
+      // Cloud Functions からのみアクセス（Admin SDK）
+      allow read, write: if false;
     }
 
     // ===== アクセスログ（内部処理用） =====
     match /accessLogs/{document} {
-      // Cloud Functions からの書き込みのみ
-      allow write: if request.auth != null;
+      // Cloud Functions からの書き込みのみ（Admin SDK）
+      allow write: if false;
       // 読み取りは禁止（プライバシー保護）
       allow read: if false;
     }
