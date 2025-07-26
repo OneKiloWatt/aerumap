@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#8FBC8F" />
+    <meta name="robots" content="index, follow" />
+
+    <title>あえるまっぷ | 友達とリアルタイムで位置を共有できる地図アプリ</title>
+
+    <meta
+      name="description"
+      content="「今どこ？」のやり取りを省いて、待ち合わせをもっとスムーズに。あえるまっぷは、友達・家族・恋人とリアルタイムで位置を共有できるインストール不要のWebアプリです。"
+    />
+    <meta
+      name="keywords"
+      content="あえるまっぷ, 位置共有, 地図アプリ, リアルタイム, 待ち合わせ, GPS, ブラウザアプリ"
+    />
+    <link rel="canonical" href="https://onekilowatt.github.io/aerumap/" />
+
+    <!-- OGP（SNS対応） -->
+    <meta property="og:title" content="あえるまっぷ" />
+    <meta property="og:description" content="「今どこ？」のやり取りを省ける、インストール不要のリアルタイム位置共有アプリ。" />
+    <meta property="og:image" content="%PUBLIC_URL%/ogp.png" />
+    <meta property="og:url" content="https://onekilowatt.github.io/aerumap/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="あえるまっぷ" />
+
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  </head>
+
+  <body>
+    <noscript>JavaScriptを有効にしてください。</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+
