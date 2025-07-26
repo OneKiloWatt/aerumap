@@ -50,7 +50,7 @@ Content-Type: application/json
 ```json
 {
   "roomId": "abcd1234efgh",
-  "url": "https://aimap.app/room/abcd1234efgh"
+  "url": "https://aerumap.app/room/abcd1234efgh"
 }
 ```
 

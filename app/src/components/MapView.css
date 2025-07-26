@@ -1,0 +1,645 @@
+/* MapView.css */
+.map-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-color: #F5F2EB;
+}
+
+.map-loading {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #8B4513;
+}
+
+/* Leafletカスタムマーカー */
+.custom-marker {
+  background: none !important;
+  border: none !important;
+}
+
+.marker-content {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marker-me .marker-content {
+  background: linear-gradient(45deg, #8FBC8F, #6B8E6B);
+  color: white;
+  box-shadow: 0 4px 12px rgba(143, 188, 143, 0.4);
+}
+
+.marker-other .marker-content {
+  background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.marker-content:hover {
+  transform: scale(1.1);
+}
+
+/* Leafletポップアップ用スタイル */
+.popup-content-leaflet {
+  padding: 0;
+  margin: 0;
+}
+
+.popup-nickname {
+  font-weight: bold;
+  color: #8B4513;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.popup-message {
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.popup-distance {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.popup-time {
+  color: #999;
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+
+.edit-message-btn {
+  background: linear-gradient(45deg, #8FBC8F, #6B8E6B);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+}
+
+.edit-message-btn:hover {
+  background: linear-gradient(45deg, #7AA07A, #5A7E5A);
+}
+
+/* 右上共有ボタン */
+.share-button {
+  position: fixed;
+  top: 80px; /* ヘッダーの下に配置 */
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* Leafletより上に表示 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 左上メニューボタン */
+.menu-button {
+  position: fixed;
+  top: 80px; /* ヘッダーの下に移動 */
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: #8B4513;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* Leafletより上に表示 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 右下現在位置ボタン */
+.location-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* Leafletより上に表示 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Google Mapsっぽい現在位置アイコン（あいまっぷカラー） */
+.location-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #8B4513;
+  background: white;
+  position: relative;
+}
+
+.location-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8B4513;
+}
+
+/* メニューオーバーレイ */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1100; /* メニューボタンより上に */
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 140px 20px 20px 20px; /* ヘッダー + メニューボタン分を考慮 */
+}
+
+.menu-dropdown {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-item:hover {
+  background-color: #f8f9fa;
+}
+
+.edit-nickname-btn {
+  color: #8B4513;
+}
+
+.edit-nickname-btn:hover {
+  background-color: #f5f2eb;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 0;
+}
+
+.exit-btn {
+  color: #d63384;
+}
+
+.exit-btn:hover {
+  background-color: #fff5f8;
+}
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+  .share-button {
+    top: 75px; /* スマホ版でもヘッダー下に */
+    right: 15px;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .menu-button {
+    top: 75px; /* スマホ版でもヘッダー下に */
+    left: 15px;
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .location-button {
+    bottom: 15px;
+    right: 15px;
+    width: 56px;
+    height: 56px;
+  }
+  
+  .location-icon {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .location-icon::after {
+    width: 7px;
+    height: 7px;
+  }
+  
+  .menu-overlay {
+    padding: 130px 15px 15px 15px; /* スマホ版メニュー位置調整 */
+    justify-content: flex-start; /* 左寄せ */
+  }
+}
+
+.exit-dialog {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideUpFadeIn 0.3s ease-out;
+}
+
+.exit-dialog-header {
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.exit-dialog-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #FF6B6B; /* DESIGN.mdのコーラルレッド */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exit-dialog-content {
+  padding: 20px 24px;
+  line-height: 1.6;
+}
+
+.exit-dialog-content p {
+  margin: 0 0 12px 0;
+  color: #333; /* DESIGN.mdのダークグレー */
+  font-size: 16px; /* DESIGN.mdの本文サイズ */
+}
+
+.exit-dialog-content p:last-child {
+  margin-bottom: 0;
+  font-weight: bold;
+  color: #FF6B6B; /* DESIGN.mdのコーラルレッド */
+}
+
+.exit-dialog-buttons {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.exit-cancel-btn {
+  background: #F5F2EB; /* DESIGN.mdの薄いベージュ */
+  color: #666; /* DESIGN.mdのミディアムグレー */
+  border: 1px solid #D2B48C; /* DESIGN.mdのベージュ */
+  border-radius: 50px; /* DESIGN.mdルール準拠 */
+  padding: 12px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.exit-cancel-btn:hover:not(:disabled) {
+  background: #D2B48C; /* DESIGN.mdのベージュ */
+  transform: translateY(-2px); /* DESIGN.mdのホバー演出 */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.exit-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.exit-confirm-btn {
+  background: linear-gradient(45deg, #FF6B6B, #FF8E8E); /* DESIGN.mdのコーラルレッド */
+  color: white;
+  border: none;
+  border-radius: 50px; /* DESIGN.mdルール準拠 */
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.exit-confirm-btn:hover:not(:disabled) {
+  background: linear-gradient(45deg, #FF8E8E, #FF6B6B);
+  transform: translateY(-2px); /* DESIGN.mdのホバー演出 */
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.exit-confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
+
+/* ダイアログアニメーション */
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 退出ダイアログのスマホ対応 */
+@media (max-width: 768px) {
+  .exit-dialog {
+    max-width: 340px;
+    width: 95%;
+  }
+  
+  .exit-dialog-header {
+    padding: 20px 20px 14px 20px;
+  }
+  
+  .exit-dialog-header h3 {
+    font-size: 16px;
+  }
+  
+  .exit-dialog-content {
+    padding: 16px 20px;
+  }
+  
+  .exit-dialog-content p {
+    font-size: 14px; /* スマホでは少し小さく */
+  }
+  
+  .exit-dialog-buttons {
+    padding: 14px 20px 20px 20px;
+    flex-direction: column;
+  }
+  
+  .exit-cancel-btn,
+  .exit-confirm-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 15px;
+    min-width: auto;
+  }
+}
+
+/* ===== メッセージモーダル専用オーバーレイ ===== */
+.message-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  z-index: 1500 !important; /* Leaflet地図より確実に上に */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+}
+
+/* ===== メッセージ編集モーダル（DESIGN.mdルール準拠） ===== */
+.message-modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  max-width: 420px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideUpFadeIn 0.3s ease-out;
+}
+
+.message-modal-header {
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(45deg, #8FBC8F, #6B8E6B); /* DESIGN.mdの緑グラデ */
+  color: white;
+}
+
+.message-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-modal-content {
+  padding: 24px;
+}
+
+.message-modal-content p {
+  margin: 0 0 16px 0;
+  color: #333; /* DESIGN.mdのダークグレー */
+  font-size: 16px; /* DESIGN.mdの本文サイズ */
+  line-height: 1.6;
+}
+
+.message-input {
+  width: 100%;
+  border: 2px solid #D2B48C; /* DESIGN.mdのベージュ */
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: #8FBC8F; /* DESIGN.mdの薄い緑 */
+  box-shadow: 0 0 0 3px rgba(143, 188, 143, 0.2);
+}
+
+.message-input:disabled {
+  background-color: #F5F2EB; /* DESIGN.mdの薄いベージュ */
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.message-input::placeholder {
+  color: #666; /* DESIGN.mdのミディアムグレー */
+  font-style: italic;
+}
+
+.message-counter {
+  margin-top: 8px;
+  text-align: right;
+  font-size: 12px;
+  color: #666; /* DESIGN.mdのミディアムグレー */
+}
+
+.message-modal-buttons {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.message-cancel-btn {
+  background: #F5F2EB; /* DESIGN.mdの薄いベージュ */
+  color: #666; /* DESIGN.mdのミディアムグレー */
+  border: 1px solid #D2B48C; /* DESIGN.mdのベージュ */
+  border-radius: 50px; /* DESIGN.mdルール準拠 */
+  padding: 12px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-cancel-btn:hover:not(:disabled) {
+  background: #D2B48C; /* DESIGN.mdのベージュ */
+  transform: translateY(-2px); /* DESIGN.mdのホバー演出 */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.message-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.message-save-btn {
+  background: linear-gradient(45deg, #8FBC8F, #6B8E6B); /* DESIGN.mdの緑グラデ */
+  color: white;
+  border: none;
+  border-radius: 50px; /* DESIGN.mdルール準拠 */
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+  box-shadow: 0 4px 12px rgba(143, 188, 143, 0.3);
+}
+
+.message-save-btn:hover:not(:disabled) {
+  background: linear-gradient(45deg, #6B8E6B, #5A7E5A);
+  transform: translateY(-2px); /* DESIGN.mdのホバー演出 */
+  box-shadow: 0 6px 20px rgba(143, 188, 143, 0.4);
+}
+
+.message-save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 12px rgba(143, 188, 143, 0.2);
+}
+
+/* メッセージモーダルのスマホ対応 */
+@media (max-width: 768px) {
+  .message-overlay {
+    padding: 15px !important;
+  }
+  
+  .message-modal {
+    max-width: 360px;
+    width: 95%;
+  }
+  
+  .message-modal-header {
+    padding: 20px 20px 14px 20px;
+  }
+  
+  .message-modal-header h3 {
+    font-size: 16px;
+  }
+  
+  .message-modal-content {
+    padding: 20px;
+  }
+  
+  .message-modal-content p {
+    font-size: 14px;
+  }
+  
+  .message-input {
+    font-size: 16px; /* iOSでズームを防ぐ */
+    padding: 14px 16px;
+  }
+  
+  .message-modal-buttons {
+    padding: 14px 20px 20px 20px;
+    flex-direction: column;
+  }
+  
+  .message-cancel-btn,
+  .message-save-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 15px;
+    min-width: auto;
+  }
+}

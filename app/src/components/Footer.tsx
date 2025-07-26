@@ -5,9 +5,9 @@ export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <p>&copy; 2025 あいまっぷ. All rights reserved.</p>
+        <p>&copy; 2025 あえるまっぷ. All rights reserved.</p>
         <div className="footer-links">
-          <a href="https://github.com/OneKiloWatt/aimap" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/OneKiloWatt/aerumap" target="_blank" rel="noopener noreferrer">
             GitHub
           </a>
           <a href="/docs/TERMS.md" target="_blank" rel="noopener noreferrer">

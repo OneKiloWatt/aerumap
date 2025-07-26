@@ -8,7 +8,7 @@ export default function Header() {
       <div className="header-content">
         <Link to="/" className="logo">
           <img src="/images/icon.svg" alt="アイコン" className="logo-icon" />
-          <span className="logo-text">あいまっぷ</span>
+          <span className="logo-text">あえるまっぷ</span>
         </Link>
       </div>
     </header>
