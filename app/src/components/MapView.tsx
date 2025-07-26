@@ -210,7 +210,6 @@ export default function MapView(props: MapViewProps = {}) {
     }
   }, [loading, position, mapReady, onMapReady]);
 
-/*
   // Firestore接続テスト（デバッグ用）
   React.useEffect(() => {
     if (roomId && position && !loading) {
@@ -218,81 +217,6 @@ export default function MapView(props: MapViewProps = {}) {
       testFirestoreConnection(roomId);
     }
   }, [roomId, position, loading]);
-*/
-// Firestore接続テスト（デバッグ用）
-React.useEffect(() => {
-  if (roomId && position && !loading) {
-    logger.debug('Firestore接続テスト実行');
-    
-    // 詳細デバッグを直接実行
-    const debugFirestore = async () => {
-      console.log('🚨 MapView内デバッグ開始');
-      
-      try {
-        const { auth, db } = await import('../firebase');
-        const { doc as firestoreDoc, setDoc, getDoc } = await import('firebase/firestore');
-        
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          console.error('❌ 未認証ユーザー');
-          return;
-        }
-
-        console.log('🔍 認証状態:', {
-          uid: currentUser.uid,
-          isAnonymous: currentUser.isAnonymous,
-          projectId: db.app.options.projectId
-        });
-
-        // 1. 最小限の書き込みテスト
-        console.log('📝 位置情報書き込みテスト開始...');
-        const locationRef = firestoreDoc(db, `rooms/${roomId}/locations`, currentUser.uid);
-        
-        await setDoc(locationRef, {
-          lat: position[0],
-          lng: position[1],
-          updatedAt: new Date(),
-          test: true
-        }, { merge: true });
-        
-        console.log('✅ 位置情報書き込みテスト成功！');
-
-        // 2. 読み取りテスト
-        console.log('📖 位置情報読み取りテスト開始...');
-        const readResult = await getDoc(locationRef);
-        
-        if (readResult.exists()) {
-          console.log('✅ 位置情報読み取りテスト成功！', readResult.data());
-        } else {
-          console.log('❌ ドキュメントが見つかりません');
-        }
-
-        // 3. メンバー情報確認
-        console.log('👤 メンバー情報確認開始...');
-        const memberRef = firestoreDoc(db, `rooms/${roomId}/members`, currentUser.uid);
-        const memberResult = await getDoc(memberRef);
-        
-        if (memberResult.exists()) {
-          console.log('✅ メンバー情報確認成功！', memberResult.data());
-        } else {
-          console.log('❌ メンバー情報が見つかりません！これが問題の原因です');
-        }
-
-        console.log('🎉 すべてのテスト完了');
-
-      } catch (error: any) {
-        console.error('🚨 デバッグエラー発生:', error);
-        console.error('エラー詳細:', {
-          message: error?.message,
-          code: error?.code,
-          stack: error?.stack
-        });
-      }
-    };
-
-    debugFirestore();
-  }
-}, [roomId, position, loading]);
 
   // 実際のマーカーデータ（実データ）
   const markers: MarkerData[] = useMemo(() => {
