@@ -17,63 +17,66 @@ jobs:
         with:
           node-version: 18
           
-      - name: Debug Environment Variables
+      - name: Debug Firebase Environment Variables
         run: |
-          if [ -z "$REACT_APP_FIREBASE_API_KEY" ]; then
-            echo "Error: REACT_APP_FIREBASE_API_KEY is not set"
+          echo "🔍 Firebase設定確認:"
+          if [ -z "$REACT_APP_API_KEY" ]; then
+            echo "❌ REACT_APP_API_KEY が設定されていません"
             exit 1
+          else
+            echo "✅ REACT_APP_API_KEY: 設定済み (${#REACT_APP_API_KEY}文字)"
           fi
-          if [ -z "$REACT_APP_FIREBASE_PROJECT_ID" ]; then
-            echo "Error: REACT_APP_FIREBASE_PROJECT_ID is not set"
+          
+          if [ -z "$REACT_APP_AUTH_DOMAIN" ]; then
+            echo "❌ REACT_APP_AUTH_DOMAIN が設定されていません"
             exit 1
+          else
+            echo "✅ REACT_APP_AUTH_DOMAIN: $REACT_APP_AUTH_DOMAIN"
           fi
-          if [ -z "$REACT_APP_FIREBASE_AUTH_DOMAIN" ]; then
-            echo "Error: REACT_APP_FIREBASE_AUTH_DOMAIN is not set"
+          
+          if [ -z "$REACT_APP_PROJECT_ID" ]; then
+            echo "❌ REACT_APP_PROJECT_ID が設定されていません"
             exit 1
+          else
+            echo "✅ REACT_APP_PROJECT_ID: $REACT_APP_PROJECT_ID"
           fi
-          if [ -z "$REACT_APP_FIREBASE_STORAGE_BUCKET" ]; then
-            echo "Error: REACT_APP_FIREBASE_STORAGE_BUCKET is not set"
+          
+          if [ -z "$REACT_APP_APP_ID" ]; then
+            echo "❌ REACT_APP_APP_ID が設定されていません"
             exit 1
+          else
+            echo "✅ REACT_APP_APP_ID: $REACT_APP_APP_ID"
           fi
-          if [ -z "$REACT_APP_FIREBASE_MESSAGING_SENDER_ID" ]; then
-            echo "Error: REACT_APP_FIREBASE_MESSAGING_SENDER_ID is not set"
-            exit 1
-          fi
-          if [ -z "$REACT_APP_FIREBASE_APP_ID" ]; then
-            echo "Error: REACT_APP_FIREBASE_APP_ID is not set"
-            exit 1
-          fi
-          echo "All Firebase environment variables are set correctly"
+          
+          echo "✅ すべてのFirebase環境変数が正しく設定されています"
         env:
-          REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
-          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
-          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
-          REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.REACT_APP_FIREBASE_MEASUREMENT_ID }}
+          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+          REACT_APP_AUTH_DOMAIN: ${{ secrets.REACT_APP_AUTH_DOMAIN }}
+          REACT_APP_PROJECT_ID: ${{ secrets.REACT_APP_PROJECT_ID }}
+          REACT_APP_APP_ID: ${{ secrets.REACT_APP_APP_ID }}
           
       - name: Install Dependencies
         run: |
           cd app
           npm ci
           
-      - name: Build with correct PUBLIC_URL
+      - name: Build for Production
         run: |
           cd app
-          echo "Building with PUBLIC_URL=/aerumap"
+          echo "🔨 本番環境用ビルド開始 (PUBLIC_URL=/aerumap)"
           PUBLIC_URL=/aerumap npm run build
-          echo "Build completed. Checking index.html for correct paths:"
-          head -20 build/index.html
+          echo "✅ ビルド完了"
         env:
           CI: false
-          REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
-          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
-          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
-          REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.REACT_APP_FIREBASE_MEASUREMENT_ID }}
+          # エミュレーターを無効にして本番Firebase使用
+          REACT_APP_USE_FIREBASE_EMULATOR: false
+          # 既存firebase.tsで使用している環境変数名
+          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+          REACT_APP_AUTH_DOMAIN: ${{ secrets.REACT_APP_AUTH_DOMAIN }}
+          REACT_APP_PROJECT_ID: ${{ secrets.REACT_APP_PROJECT_ID }}
+          REACT_APP_APP_ID: ${{ secrets.REACT_APP_APP_ID }}
+          # API Base URL（必要に応じて）
+          REACT_APP_API_BASE_URL: https://us-central1-aerumap.cloudfunctions.net
         
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
