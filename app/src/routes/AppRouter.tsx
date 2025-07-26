@@ -1,5 +1,5 @@
-// src/routes/AppRouter.tsx
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+// src/routes/AppRouter.tsx - BrowserRouter版（きれいなURL）
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TopPage from "../pages/TopPage";
 import RoomPage from "../pages/RoomPage";
 import NoLocationPage from "../pages/NoLocationPage";
@@ -8,10 +8,15 @@ import TermsPage from "../pages/TermsPage";
 import ExpiredPage from '../pages/ExpiredPage';
 
 export default function AppRouter() {
-  console.log('Using HashRouter - URLs will have # in them');
-  
+  // GitHub Pagesのbasename設定
+  const basename = process.env.NODE_ENV === 'production' 
+    ? '/aerumap'
+    : '';
+
+  console.log('Using BrowserRouter with basename:', basename);
+
   return (
-    <Router>
+    <Router basename={basename}>
       <Routes>
         <Route path="/" element={<TopPage />} />
         <Route path="/room/:roomId" element={<RoomPage />} />
