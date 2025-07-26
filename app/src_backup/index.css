@@ -1,0 +1,12 @@
+/* index.css */
+body {
+  margin: 0;
+  font-family: "Noto Sans JP", sans-serif;
+  background-color: #fffaf3;
+  color: #333;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
