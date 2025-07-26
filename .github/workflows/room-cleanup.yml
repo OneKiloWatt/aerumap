@@ -1,6 +1,10 @@
 name: Scheduled Room Cleanup
 
 on:
+  push:
+    branches:
+      - goto
+
   schedule:
     - cron: '0 */3 * * *' # 3時間おきに実行（UTC基準）
   workflow_dispatch:
