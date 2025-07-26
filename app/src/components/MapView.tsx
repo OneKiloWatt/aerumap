@@ -70,7 +70,7 @@ export default function MapView(props: MapViewProps = {}) {
     enableHighAccuracy: true,
     timeout: 10000,
     maximumAge: 60000,
-    watchPosition: false,
+    watchPosition: true,
     // fallbackPosition を完全削除（間違った位置情報の送信を防ぐ）
   }), []);
   
