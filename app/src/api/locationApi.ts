@@ -432,41 +432,84 @@ export async function testFirestoreConnection(roomId: string): Promise<void> {
       return;
     }
 
-    // 1. locations コレクション読み取りテスト
-    const locationsRef = collection(db, `rooms/${roomId}/locations`);
-    const locationsSnapshot = await getDocs(query(locationsRef));
-    
-    logger.debug('locationsコレクション読み取りテスト', {
-      docCount: locationsSnapshot.docs.length,
-      docs: locationsSnapshot.docs.map(doc => ({
-        id: doc.id.substring(0, 4) + '***',
-        data: doc.data()
-      }))
+    logger.debug('認証状態詳細', {
+      uid: currentUser.uid,
+      isAnonymous: currentUser.isAnonymous,
+      metadata: {
+        creationTime: currentUser.metadata.creationTime,
+        lastSignInTime: currentUser.metadata.lastSignInTime
+      }
     });
 
-    // 2. members コレクション読み取りテスト  
-    const membersRef = collection(db, `rooms/${roomId}/members`);
-    const membersSnapshot = await getDocs(query(membersRef));
-    
-    logger.debug('membersコレクション読み取りテスト', {
-      docCount: membersSnapshot.docs.length,
-      docs: membersSnapshot.docs.map(doc => ({
-        id: doc.id.substring(0, 4) + '***',
-        data: { nickname: doc.data().nickname }
-      }))
-    });
+    // 1. 自分のメンバー情報を確認
+    try {
+      const myMemberRef = firestoreDoc(db, `rooms/${roomId}/members`, currentUser.uid);
+      const myMemberSnap = await getDoc(myMemberRef);
+      
+      logger.debug('自分のメンバー情報確認', {
+        path: `rooms/${roomId}/members/${currentUser.uid}`,
+        exists: myMemberSnap.exists(),
+        data: myMemberSnap.exists() ? myMemberSnap.data() : null
+      });
 
-    // 3. 自分のメンバー情報確認
-    const myMemberRef = firestoreDoc(db, `rooms/${roomId}/members`, currentUser.uid);
-    const myMemberSnap = await getDoc(myMemberRef);
-    
-    logger.debug('自分のメンバー情報確認', {
-      exists: myMemberSnap.exists(),
-      data: myMemberSnap.exists() ? { nickname: myMemberSnap.data()?.nickname } : null
-    });
+      if (!myMemberSnap.exists()) {
+        logger.error('⚠️ メンバー情報が存在しません - これがpermission-deniedの原因です');
+        return;
+      }
+    } catch (memberError) {
+      logger.error('メンバー情報読み取りエラー', memberError);
+      return;
+    }
+
+    // 2. 自分の位置情報ドキュメントに直接アクセス
+    try {
+      const myLocationRef = firestoreDoc(db, `rooms/${roomId}/locations`, currentUser.uid);
+      const myLocationSnap = await getDoc(myLocationRef);
+      
+      logger.debug('自分の位置情報確認', {
+        path: `rooms/${roomId}/locations/${currentUser.uid}`,
+        exists: myLocationSnap.exists(),
+        data: myLocationSnap.exists() ? myLocationSnap.data() : null
+      });
+    } catch (locationError) {
+      logger.error('位置情報読み取りエラー', locationError);
+    }
+
+    // 3. 位置情報の書き込みテスト
+    try {
+      const testLocationRef = firestoreDoc(db, `rooms/${roomId}/locations`, currentUser.uid);
+      await setDoc(testLocationRef, {
+        lat: 35.6712448,
+        lng: 139.2574464,
+        updatedAt: new Date(),
+        test: true
+      }, { merge: true });
+      
+      logger.debug('✅ 位置情報書き込みテスト成功');
+    } catch (writeError) {
+      logger.error('❌ 位置情報書き込みテストエラー', writeError);
+    }
+
+    // 4. ルーム情報の確認
+    try {
+      const roomRef = firestoreDoc(db, 'rooms', roomId);
+      const roomSnap = await getDoc(roomRef);
+      
+      logger.debug('ルーム情報確認', {
+        exists: roomSnap.exists(),
+        data: roomSnap.exists() ? {
+          createdAt: roomSnap.data()?.createdAt,
+          expiresAt: roomSnap.data()?.expiresAt
+        } : null
+      });
+    } catch (roomError) {
+      logger.error('ルーム情報読み取りエラー', roomError);
+    }
+
+    logger.debug('Firestore接続テスト完了');
 
   } catch (error) {
-    logger.error('Firestore接続テストエラー', error);
+    logger.error('Firestore接続テスト全体エラー', error);
   }
 }
 
