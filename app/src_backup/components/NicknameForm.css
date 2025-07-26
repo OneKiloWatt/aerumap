@@ -1,0 +1,139 @@
+/* src/components/NicknameForm.css */
+.nickname-form-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nickname-form-container {
+  background-color: #fff;
+  padding: 24px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  max-width: 90%;
+  width: 400px;
+  text-align: center;
+}
+
+.nickname-form-container h2 {
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+  color: #8B4513;
+}
+
+.nickname-form-container input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.nickname-form-container button {
+  padding: 10px 20px;
+  background-color: #ff7f7f;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.nickname-form-container button:hover {
+  background-color: #ff5f5f;
+}
+
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.random-button {
+  background-color: #ccc;
+  color: #333;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.random-button:hover {
+  background-color: #bbb;
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+  align-items: stretch; /* ← ココを stretch に！ */
+  margin-bottom: 16px;
+}
+
+.input-with-button input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid #333;
+  outline: none;
+  height: 48px; /* ← 入力欄の高さを固定！ */
+  box-sizing: border-box;
+}
+
+.input-with-button button {
+  width: 48px; /* ← inputと同じ高さになるように幅指定も調整 */
+  height: 48px; /* ← 高さも固定して統一！ */
+  padding: 0;
+  font-size: 20px;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  background-color: #f9f6f2;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.input-with-button button:hover {
+  background-color: #f0edea;
+}
+
+.nickname-modal {
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px; /* ← 増やしてゆったり感＆下の余白確保 */
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  position: relative;
+  box-sizing: border-box; /* ← パディング含めたサイズに */
+}
