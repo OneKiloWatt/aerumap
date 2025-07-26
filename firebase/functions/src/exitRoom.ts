@@ -37,7 +37,7 @@ export const exitRoom = functions.https.onRequest(async (req: Request, res: Resp
   if (allowedOrigins.includes(origin)) {
     res.set('Access-Control-Allow-Origin', origin);
   } else {
-    res.set('Access-Control-Allow-Origin', ''https://onekilowatt.github.io''); // fallback>（←念のため）
+    res.set('Access-Control-Allow-Origin', 'https://onekilowatt.github.io'); // fallback>（←念のため）
   }
   res.set('Access-Control-Allow-Methods', 'DELETE');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
