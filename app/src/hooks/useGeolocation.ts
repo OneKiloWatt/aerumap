@@ -6,7 +6,7 @@ interface UseGeolocationOptions {
   timeout?: number;
   maximumAge?: number;
   watchPosition?: boolean;
-  fallbackPosition?: [number, number];
+  fallbackPosition?: [number, number]; // オプションとして残すが、デフォルトは undefined
 }
 
 interface UseGeolocationReturn {
@@ -24,7 +24,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}): UseGeolocat
     enableHighAccuracy = true, 
     timeout = 10000, 
     maximumAge = 60000,
-    fallbackPosition = [35.6598, 139.7006] // 渋谷駅
+    fallbackPosition // デフォルト値を削除：undefined のまま
   } = options;
 
   useEffect(() => {
@@ -33,10 +33,14 @@ export function useGeolocation(options: UseGeolocationOptions = {}): UseGeolocat
     if (!navigator.geolocation) {
       console.log('❌ useGeolocation: Geolocation API がサポートされていません');
       setError('位置情報がサポートされていません');
-      // フォールバック位置を使用
+      
+      // フォールバック位置が明示的に渡された場合のみ使用
       if (fallbackPosition) {
         console.log('🛡️ useGeolocation: フォールバック位置を使用', fallbackPosition);
         setPosition(fallbackPosition);
+      } else {
+        console.log('⚠️ useGeolocation: フォールバック位置なし、position は null のまま');
+        // position は null のまま → エラー画面表示
       }
       setLoading(false);
       return;
@@ -68,10 +72,13 @@ export function useGeolocation(options: UseGeolocationOptions = {}): UseGeolocat
       
       setError(errorMessage);
       
-      // フォールバック位置を使用
+      // フォールバック位置が明示的に渡された場合のみ使用
       if (fallbackPosition) {
         console.log('🛡️ useGeolocation: エラー時フォールバック位置を使用', fallbackPosition);
         setPosition(fallbackPosition);
+      } else {
+        console.log('⚠️ useGeolocation: エラー時フォールバック位置なし、position は null のまま');
+        // position は null のまま → エラー画面表示
       }
       setLoading(false);
     };

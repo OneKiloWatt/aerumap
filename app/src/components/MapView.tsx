@@ -62,16 +62,16 @@ export default function MapView(props: MapViewProps = {}) {
   // 地図インスタンス参照用
   const mapRef = React.useRef<L.Map | null>(null);
   
-  // 位置情報フック
+  // 位置情報フック（フォールバック位置無効化）
   logger.debug('useGeolocation フック呼び出し開始');
   
-  // オプションをメモ化して無限ループを防ぐ
+  // オプションをメモ化して無限ループを防ぐ（フォールバック位置削除）
   const geolocationOptions = useMemo(() => ({
     enableHighAccuracy: true,
     timeout: 10000,
     maximumAge: 60000,
     watchPosition: false,
-    fallbackPosition: [35.6598, 139.7006] as [number, number] // 渋谷駅
+    // fallbackPosition を完全削除（間違った位置情報の送信を防ぐ）
   }), []);
   
   const { position, loading, error } = useGeolocation(geolocationOptions);
@@ -84,7 +84,7 @@ export default function MapView(props: MapViewProps = {}) {
     error: sharingError 
   } = useLocationSharing({
     roomId: roomId || '',
-    enabled: !!roomId && !!position && !loading,
+    enabled: !!roomId && !!position && !loading, // positionがある場合のみ有効化
     position
   });
 
@@ -496,6 +496,20 @@ export default function MapView(props: MapViewProps = {}) {
     setShowExitDialog(false);
   };
 
+  // 位置情報エラーと読み込み状態の判定（安全性重視）
+  logger.debug('位置情報エラー判定デバッグ', {
+    hasPosition: !!position,
+    loading,
+    hasError: !!error,
+    errorType: typeof error,
+    errorValue: error,
+    errorString: String(error)
+  });
+
+  // 確実なエラー検出：位置情報が取得できない場合は必ずエラー画面を表示
+  const hasLocationError = !!error;
+  const shouldShowError = !position || hasLocationError;
+
   if (loading) {
     logger.debug('位置情報ローディング中を表示');
     return (
@@ -505,12 +519,51 @@ export default function MapView(props: MapViewProps = {}) {
     );
   }
 
-  if (!position) {
-    logger.warn('位置情報取得失敗', { hasError: !!error });
+  // 位置情報が取得できない場合は確実にエラー画面を表示
+  if (shouldShowError) {
+    logger.warn('位置情報エラー画面表示', { 
+      hasError: !!error, 
+      error,
+      hasPosition: !!position,
+      hasLocationError,
+      shouldShowError,
+      reason: !position ? 'no_position' : 'has_error'
+    });
     return (
-      <div className="map-loading">
-        <div>位置情報を取得できませんでした</div>
-        {error && <div style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>{error}</div>}
+      <div className="location-error-container">
+        <div className="location-error-content">
+          <div className="location-error-icon">📍</div>
+          <h2 className="location-error-title">あれれ、今どこにいるかわかんないみたい！</h2>
+          <p className="location-error-description">
+            <strong>あえるまっぷを使うには、位置情報の共有が必要だよ〜！</strong><br />
+            スマホやブラウザの設定をチェックして、もう一回試してみてね💡✨
+          </p>
+          
+          {error && (
+            <div className="location-error-detail">
+              <strong>エラー詳細：</strong> {String(error)}
+            </div>
+          )}
+          
+          <div className="location-error-actions">
+            <a 
+              href="/no-location" 
+              className="location-help-btn"
+            >
+              📖 位置情報の設定方法を見る
+            </a>
+            <button 
+              className="location-retry-btn"
+              onClick={() => window.location.reload()}
+            >
+              🔄 ページを再読み込み
+            </button>
+          </div>
+          
+          <div className="location-error-footer">
+            <p>設定が完了したら、ページを再読み込みしてください</p>
+          </div>
+        </div>
       </div>
     );
   }
