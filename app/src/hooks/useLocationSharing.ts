@@ -34,7 +34,7 @@ export function useLocationSharing(options: UseLocationSharingOptions): UseLocat
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   /**
-   * 位置情報送信判定
+   * 位置情報送信判定（シンプル版）
    */
   const shouldSendLocation = useCallback((newPosition: [number, number]): boolean => {
     const now = Date.now();

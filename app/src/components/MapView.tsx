@@ -80,10 +80,27 @@ export default function MapView(props: MapViewProps = {}) {
   const [messageLoading, setMessageLoading] = useState(false);
   const [nicknameLoading, setNicknameLoading] = useState(false);
   const [exitLoading, setExitLoading] = useState(false);
+  // 🔧 プライバシー保護：初期表示位置を新宿駅に設定
+  const INITIAL_CENTER: [number, number] = [35.6896, 139.7006]; // 新宿駅
+  const [hasMovedToUserLocation, setHasMovedToUserLocation] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   
   // 地図インスタンス参照用
   const mapRef = React.useRef<L.Map | null>(null);
+  
+  // 地図インスタンス取得用の内部コンポーネント（Edge対応）
+  const MapInstanceGetter = () => {
+    const map = useMap();
+    
+    React.useEffect(() => {
+      if (map && !mapRef.current) {
+        mapRef.current = map;
+        logger.debug('地図インスタンス取得完了（useMap使用）');
+      }
+    }, [map]);
+    
+    return null;
+  };
   
   // 位置情報フック
   logger.debug('useGeolocation フック呼び出し開始');
@@ -230,6 +247,35 @@ export default function MapView(props: MapViewProps = {}) {
     }
   }, [loading, position, mapReady, onMapReady]);
 
+  // 🔧 新機能：自分の位置が確定したら地図を移動（ブラウザ互換性対応）
+  React.useEffect(() => {
+    if (position && !hasMovedToUserLocation) {
+      logger.debug('初回位置確定、地図を自分の位置に移動', {
+        position: position,
+        hasMapRef: !!mapRef.current
+      });
+      
+      // Edgeブラウザ対応：少し遅延を入れて地図インスタンスの準備を待つ
+      const moveToUserLocation = () => {
+        if (mapRef.current) {
+          logger.debug('地図インスタンス確認済み、移動実行');
+          mapRef.current.setView(position, 16, { 
+            animate: true, 
+            duration: 1.5 
+          });
+          setHasMovedToUserLocation(true);
+        } else {
+          logger.debug('地図インスタンス未準備、100ms後に再試行');
+          // 地図インスタンスがまだ準備できていない場合は少し待って再試行
+          setTimeout(moveToUserLocation, 100);
+        }
+      };
+      
+      // 初回は即実行、失敗したら遅延再試行
+      moveToUserLocation();
+    }
+  }, [position, hasMovedToUserLocation]);
+
   // Firestore接続テスト（デバッグ用）
   React.useEffect(() => {
     if (roomId && position && !loading) {
@@ -238,7 +284,7 @@ export default function MapView(props: MapViewProps = {}) {
     }
   }, [roomId, position, loading]);
 
-  // 🔧 修正：マーカーデータに距離と更新時刻を含める
+  // マーカーデータに距離と更新時刻を含める
   const markers: MarkerData[] = useMemo(() => {
     const markerList: MarkerData[] = [];
     const now = new Date();
@@ -252,7 +298,7 @@ export default function MapView(props: MapViewProps = {}) {
         lat: position[0],
         lng: position[1],
         isMe: true,
-        updatedAt: now // 現在時刻を設定
+        updatedAt: now
       });
       
       logger.debug('自分のマーカー作成', {
@@ -273,12 +319,27 @@ export default function MapView(props: MapViewProps = {}) {
       logger.debug('自分のマーカー作成（フォールバック）');
     }
 
-    // 他のユーザーのマーカー（距離を再計算）
+    // 他のユーザーのマーカー（距離計算を正確に行う）
     otherUsers.forEach(user => {
-      // 🔧 自分の位置から他のユーザーまでの距離を再計算
-      const distance = position 
-        ? calculateDistance(position[0], position[1], user.lat, user.lng)
-        : user.distance || '計算中';
+      // 🔧 距離計算：自分の位置が確定している場合のみ再計算
+      let distance: string;
+      if (position && user.lat && user.lng) {
+        distance = calculateDistance(position[0], position[1], user.lat, user.lng);
+        logger.debug('距離再計算', {
+          nickname: user.nickname,
+          myPosition: [position[0], position[1]],
+          userPosition: [user.lat, user.lng],
+          calculatedDistance: distance
+        });
+      } else {
+        // フォールバック：useLocationSharingで計算された距離をそのまま使用
+        distance = user.distance || '計算中';
+        logger.debug('距離計算スキップ', {
+          nickname: user.nickname,
+          reason: !position ? '自分の位置未確定' : '相手の位置不正',
+          fallbackDistance: distance
+        });
+      }
 
       markerList.push({
         id: user.uid,
@@ -288,7 +349,7 @@ export default function MapView(props: MapViewProps = {}) {
         lng: user.lng,
         isMe: false,
         distance: distance,
-        updatedAt: user.updatedAt || now // Firestoreから取得した更新時刻
+        updatedAt: user.updatedAt || now
       });
     });
 
@@ -722,34 +783,31 @@ export default function MapView(props: MapViewProps = {}) {
 
       {/* 実際の地図 */}
       <MapContainer
-        {...({ center: position } as any)}
-        {...({ zoom: 16 } as any)}
+        center={INITIAL_CENTER}
+        zoom={16}
         style={{ height: '100%', width: '100%' }}
-        {...({ zoomControl: false } as any)}
-        {...({ whenReady: (e: any) => {
-          mapRef.current = e.target;
-          logger.debug('地図インスタンス取得完了');
-        } } as any)}
+        zoomControl={false}
       >
+        {/* Edge対応：確実な地図インスタンス取得 */}
+        <MapInstanceGetter />
+        
         <TileLayer
-          {...({ url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" } as any)}
-          {...({ attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' } as any)}
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
         {/* マーカー表示 */}
         {markers.map(marker => (
           <Marker
-            key={`marker-${marker.id}`} // 👈 安定したキーを使用
-            {...({ position: [marker.lat, marker.lng] } as any)}
-            {...({ icon: createCustomIcon(marker.isMe, marker.nickname) } as any)}
+            key={`marker-${marker.id}`}
+            position={[marker.lat, marker.lng]}
+            icon={createCustomIcon(marker.isMe, marker.nickname)}
           >
             <Popup
-              {...({ 
-                autoPan: false, // 👈 自動移動を無効化
-                closeOnClick: false, // タップで閉じない
-                autoClose: false, // 他のポップアップが開いても閉じない
-                keepInView: true // 画面内に保持
-              } as any)}
+              autoPan={false}
+              closeOnClick={false}
+              autoClose={false}
+              keepInView={true}
             >
               <div className="popup-content-leaflet">
                 <div className="popup-nickname">

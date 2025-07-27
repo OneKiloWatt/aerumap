@@ -475,20 +475,8 @@ export async function testFirestoreConnection(roomId: string): Promise<void> {
       logger.error('位置情報読み取りエラー', locationError);
     }
 
-    // 3. 位置情報の書き込みテスト
-    try {
-      const testLocationRef = firestoreDoc(db, `rooms/${roomId}/locations`, currentUser.uid);
-      await setDoc(testLocationRef, {
-        lat: 35.6712448,
-        lng: 139.2574464,
-        updatedAt: new Date(),
-        test: true
-      }, { merge: true });
-      
-      logger.debug('✅ 位置情報書き込みテスト成功');
-    } catch (writeError) {
-      logger.error('❌ 位置情報書き込みテストエラー', writeError);
-    }
+    // 🔧 位置情報の書き込みテストを削除（実際の位置情報を上書きしないため）
+    // 3. 位置情報の書き込みテスト - 削除しました
 
     // 4. ルーム情報の確認
     try {
