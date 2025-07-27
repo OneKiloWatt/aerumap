@@ -411,11 +411,12 @@ export default function MapView(props: MapViewProps = {}) {
   };
 
   const handleShare = () => {
+    const basename = process.env.PUBLIC_URL || ''; // GitHub Pages対応
     const roomUrl = roomId 
-      ? `${window.location.origin}/room/${roomId}`
-      : `${window.location.origin}/room/ABC123`;
+      ? `${window.location.origin}${basename}/room/${roomId}`
+      : `${window.location.origin}${basename}/room/ABC123`;
     
-    logger.debug('共有ボタン押下');
+    logger.debug('共有ボタン押下', { roomUrl });
     
     navigator.clipboard.writeText(roomUrl).then(() => {
       showSuccess('招待リンクをコピーしました！みんなに送ってね 📋');
