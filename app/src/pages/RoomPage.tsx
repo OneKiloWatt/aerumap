@@ -6,6 +6,7 @@ import RoomCreatorWelcome from '../components/RoomCreatorWelcome';
 import Header from '../components/Header';
 import { checkRoom } from '../api/checkRoom';
 import { logger } from '../utils/logger';
+import { useNavigate } from 'react-router-dom';
 
 export default function RoomPage() {
   const [showJoinForm, setShowJoinForm] = useState(false);
@@ -14,6 +15,7 @@ export default function RoomPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [roomId, setRoomId] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const navigate = useNavigate(); // 👈 React Routerのnavigate追加
   
   // useEffect実行回数カウント（デバッグ用）
   const executeCountRef = React.useRef(0);
@@ -35,7 +37,7 @@ export default function RoomPage() {
         roomId: currentRoomId,
         length: currentRoomId?.length 
       });
-      window.location.href = '/expired';
+      navigate('/expired', { replace: true }); // 👈 React Routerのnavigate使用
       return;
     }
 
@@ -62,7 +64,7 @@ export default function RoomPage() {
       if (!res.found) {
         // 存在しないルームも期限切れページにリダイレクト
         logger.warn('ルームが見つかりません、期限切れページへリダイレクト');
-        window.location.href = '/expired';
+        navigate('/expired', { replace: true }); // 👈 React Routerのnavigate使用
         return;
       }
       
@@ -78,7 +80,7 @@ export default function RoomPage() {
       if (expired) {
         logger.warn('ルームの有効期限が切れています');
         // 期限切れページにリダイレクト
-        window.location.href = '/expired';
+        navigate('/expired', { replace: true }); // 👈 React Routerのnavigate使用
         return;
       }
 
@@ -114,7 +116,7 @@ export default function RoomPage() {
       setError('ルーム確認中にエラーが発生しました');
       setIsLoading(false);
     });
-  }, []);
+  }, [navigate]); // 👈 依存配列にnavigateを追加
   
   const handleJoinSubmit = useCallback((nickname: string) => {
     logger.success(`ルームに参加: ${nickname}`);
@@ -159,7 +161,7 @@ export default function RoomPage() {
       <div style={{ padding: '20px', textAlign: 'center' }}>
         <h2>エラー</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.href = '/'}>
+        <button onClick={() => navigate('/')}>
           トップページに戻る
         </button>
       </div>
