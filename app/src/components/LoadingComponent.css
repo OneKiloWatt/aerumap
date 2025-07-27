@@ -1,0 +1,41 @@
+/* src/components/LoadingComponent.css */
+
+.loading-container {
+  min-height: 100vh;
+  background: #F5F2EB;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.loading-image-wrapper {
+  margin-bottom: 30px;
+}
+
+.loading-image {
+  width: 120px;
+  height: 180px;
+  object-fit: contain;
+}
+
+.loading-title {
+  font-size: 24px;
+  color: #8B4513;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.loading-message {
+  font-size: 16px;
+  color: #666;
+  text-align: center;
+  line-height: 1.6;
+  max-width: 300px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

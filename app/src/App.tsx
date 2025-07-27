@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import AppRouter from "./routes/AppRouter";
+import LoadingComponent from './components/LoadingComponent';
 import { auth } from './firebase';
 import { logger } from './utils/logger';
 import './index.css';
@@ -42,18 +43,7 @@ function App() {
 
   // 認証ロード中は読み込み画面を表示
   if (authLoading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px',
-        color: '#8B4513' 
-      }}>
-        認証中...
-      </div>
-    );
+    return <LoadingComponent />;
   }
 
   return <AppRouter />;
