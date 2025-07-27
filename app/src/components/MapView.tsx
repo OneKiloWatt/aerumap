@@ -65,16 +65,13 @@ export default function MapView(props: MapViewProps = {}) {
   // 位置情報フック（フォールバック位置無効化）
   logger.debug('useGeolocation フック呼び出し開始');
   
-  // 🔧 修正：useMemoを削除してキャッシュ問題を解決
+  // オプションをメモ化せずに直接設定（キャッシュ問題回避）
   const geolocationOptions = {
     enableHighAccuracy: true,
     timeout: 10000,
     maximumAge: 60000,
-    watchPosition: true, // 👈 これで正しく動作するはず
-    // fallbackPosition を完全削除（間違った位置情報の送信を防ぐ）
+    watchPosition: true,
   };
-  
-  console.log('🔧 geolocationOptions確認:', geolocationOptions); // デバッグログ
   
   const { position, loading, error } = useGeolocation(geolocationOptions);
   

@@ -16,8 +16,6 @@ interface UseGeolocationReturn {
 }
 
 export function useGeolocation(options: UseGeolocationOptions = {}): UseGeolocationReturn {
-  console.log('🚨 NEW useGeolocation が読み込まれました！');
-  
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
