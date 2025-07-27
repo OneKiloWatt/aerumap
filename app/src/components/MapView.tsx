@@ -8,7 +8,7 @@ import { useGeolocation } from '../hooks/useGeolocation';
 import { useLocationSharing } from '../hooks/useLocationSharing';
 import { useMyMemberInfo } from '../hooks/useMyMemberInfo';
 import { useToast } from '../hooks/useToast';
-import { testFirestoreConnection, updateMyMessage, updateMyNickname } from '../api/locationApi';
+import { testFirestoreConnection, updateMyMessage, updateMyNickname, calculateDistance } from '../api/locationApi';
 import { exitRoom } from '../api/exitRoom';
 import { logger } from '../utils/logger';
 import ToastContainer from './ToastContainer';
@@ -22,13 +22,36 @@ interface MarkerData {
   lng: number;
   isMe: boolean;
   distance?: string;
+  updatedAt: Date; // 👈 更新時刻を追加
 }
 
 interface MapViewProps {
-  roomId?: string; // roomIdを追加
+  roomId?: string;
   onShareClick?: () => void;
   onMapReady?: () => void;
 }
+
+// 時刻フォーマット関数
+const formatUpdateTime = (date: Date): string => {
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+  
+  if (diffInMinutes < 1) {
+    return 'たった今更新';
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes}分前更新`;
+  } else if (diffInMinutes < 1440) { // 24時間
+    const hours = Math.floor(diffInMinutes / 60);
+    return `${hours}時間前更新`;
+  } else {
+    // 24時間以上の場合は時刻を表示
+    const timeString = date.toLocaleTimeString('ja-JP', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    return `${timeString}更新`;
+  }
+};
 
 // カスタムアイコン設定（文字表示）
 const createCustomIcon = (isMe: boolean, nickname: string) => {
@@ -62,19 +85,16 @@ export default function MapView(props: MapViewProps = {}) {
   // 地図インスタンス参照用
   const mapRef = React.useRef<L.Map | null>(null);
   
-  // 位置情報フック（フォールバック位置無効化）
+  // 位置情報フック
   logger.debug('useGeolocation フック呼び出し開始');
   
-  // 🔧 修正：useMemoを削除してキャッシュ問題を解決
+  // オプションをメモ化せずに直接設定（キャッシュ問題回避）
   const geolocationOptions = {
     enableHighAccuracy: true,
     timeout: 10000,
     maximumAge: 60000,
-    watchPosition: true, // 👈 これで正しく動作するはず
-    // fallbackPosition を完全削除（間違った位置情報の送信を防ぐ）
+    watchPosition: true,
   };
-  
-  console.log('🔧 geolocationOptions確認:', geolocationOptions); // デバッグログ
   
   const { position, loading, error } = useGeolocation(geolocationOptions);
   
@@ -86,7 +106,7 @@ export default function MapView(props: MapViewProps = {}) {
     error: sharingError 
   } = useLocationSharing({
     roomId: roomId || '',
-    enabled: !!roomId && !!position && !loading, // positionがある場合のみ有効化
+    enabled: !!roomId && !!position && !loading,
     position
   });
 
@@ -97,7 +117,7 @@ export default function MapView(props: MapViewProps = {}) {
     error: memberError 
   } = useMyMemberInfo(roomId || '');
   
-  // 位置情報は機密情報なので本番では詳細を出さない
+  // 位置情報の状態ログ
   logger.debug('位置情報状態', { 
     hasPosition: !!position, 
     loading, 
@@ -110,16 +130,15 @@ export default function MapView(props: MapViewProps = {}) {
 
   // リアルタイム通知用：前回のotherUsers状態を記録
   const prevOtherUsersRef = React.useRef<typeof otherUsers>([]);
-  const isInitialLoadRef = React.useRef(true); // 初回ロード判定
+  const isInitialLoadRef = React.useRef(true);
   
   // otherUsersの変化を監視してリアルタイム通知
   React.useEffect(() => {
-    if (!isSharing || !myMemberInfo) return; // 自分が参加してない時は通知しない
+    if (!isSharing || !myMemberInfo) return;
     
     const prevUsers = prevOtherUsersRef.current;
     const currentUsers = otherUsers;
     
-    // デバッグログ：状態変化を詳細記録
     logger.debug('otherUsers変化検出', {
       prevCount: prevUsers.length,
       currentCount: currentUsers.length,
@@ -128,7 +147,6 @@ export default function MapView(props: MapViewProps = {}) {
       currentUsers: currentUsers.map(u => ({ uid: u.uid.substring(0, 4) + '***', nickname: u.nickname, message: u.message }))
     });
     
-    // 初回ロード時のみスキップ（その後の変化は全て通知）
     if (isInitialLoadRef.current) {
       prevOtherUsersRef.current = currentUsers;
       isInitialLoadRef.current = false;
@@ -220,11 +238,12 @@ export default function MapView(props: MapViewProps = {}) {
     }
   }, [roomId, position, loading]);
 
-  // 実際のマーカーデータ（実データ）
+  // 🔧 修正：マーカーデータに距離と更新時刻を含める
   const markers: MarkerData[] = useMemo(() => {
     const markerList: MarkerData[] = [];
+    const now = new Date();
 
-    // 自分のマーカー（実際のニックネーム使用）
+    // 自分のマーカー
     if (position && myMemberInfo) {
       markerList.push({
         id: 'me',
@@ -232,7 +251,8 @@ export default function MapView(props: MapViewProps = {}) {
         message: myMemberInfo.message || '現在地',
         lat: position[0],
         lng: position[1],
-        isMe: true
+        isMe: true,
+        updatedAt: now // 現在時刻を設定
       });
       
       logger.debug('自分のマーカー作成', {
@@ -240,21 +260,26 @@ export default function MapView(props: MapViewProps = {}) {
         hasMessage: !!myMemberInfo.message
       });
     } else if (position && !myMemberInfo && !memberLoading) {
-      // フォールバック：メンバー情報がない場合
       markerList.push({
         id: 'me',
         nickname: '自分',
         message: '現在地',
         lat: position[0],
         lng: position[1],
-        isMe: true
+        isMe: true,
+        updatedAt: now
       });
       
       logger.debug('自分のマーカー作成（フォールバック）');
     }
 
-    // 他のユーザーのマーカー
+    // 他のユーザーのマーカー（距離を再計算）
     otherUsers.forEach(user => {
+      // 🔧 自分の位置から他のユーザーまでの距離を再計算
+      const distance = position 
+        ? calculateDistance(position[0], position[1], user.lat, user.lng)
+        : user.distance || '計算中';
+
       markerList.push({
         id: user.uid,
         nickname: user.nickname,
@@ -262,7 +287,8 @@ export default function MapView(props: MapViewProps = {}) {
         lat: user.lat,
         lng: user.lng,
         isMe: false,
-        distance: user.distance
+        distance: distance,
+        updatedAt: user.updatedAt || now // Firestoreから取得した更新時刻
       });
     });
 
@@ -285,7 +311,6 @@ export default function MapView(props: MapViewProps = {}) {
     }
 
     try {
-      // 全マーカーの座標を取得
       const coordinates: [number, number][] = markers.map(marker => [marker.lat, marker.lng]);
       
       logger.debug('座標計算', { 
@@ -293,23 +318,20 @@ export default function MapView(props: MapViewProps = {}) {
       });
 
       if (coordinates.length === 1) {
-        // マーカーが1つだけの場合：適切なズームレベルで中央表示
         const [lat, lng] = coordinates[0];
         mapRef.current.setView([lat, lng], 16, { animate: true, duration: 1.0 });
         
         logger.debug('単一マーカー中央表示', { lat, lng, zoom: 16 });
         showInfo('現在位置に移動しました 📍');
       } else {
-        // 複数マーカーの場合：全てが収まるようにfitBounds
         const bounds = L.latLngBounds(coordinates);
         
-        // 適度な余白を追加（型安全な定義）
         const paddingOptions: L.FitBoundsOptions = {
-          paddingTopLeft: [50, 100] as [number, number], // 上部ヘッダー分の余白
-          paddingBottomRight: [50, 50] as [number, number], // 下部ボタン分の余白
+          paddingTopLeft: [50, 100] as [number, number],
+          paddingBottomRight: [50, 50] as [number, number],
           animate: true,
           duration: 1.0,
-          maxZoom: 18 // 最大ズームレベル制限
+          maxZoom: 18
         };
         
         mapRef.current.fitBounds(bounds, paddingOptions);
@@ -327,10 +349,9 @@ export default function MapView(props: MapViewProps = {}) {
   };
 
   const handleShare = () => {
-    // 実際のルームの招待URLを生成
     const roomUrl = roomId 
       ? `${window.location.origin}/room/${roomId}`
-      : `${window.location.origin}/room/ABC123`; // フォールバック
+      : `${window.location.origin}/room/ABC123`;
     
     logger.debug('共有ボタン押下');
     
@@ -340,7 +361,6 @@ export default function MapView(props: MapViewProps = {}) {
       showError('コピーに失敗しました。ブラウザの設定をご確認ください。');
     });
     
-    // 親コンポーネントに共有ボタンが押されたことを通知
     if (onShareClick) {
       logger.debug('onShareClick コールバック実行');
       onShareClick();
@@ -354,11 +374,9 @@ export default function MapView(props: MapViewProps = {}) {
 
   const handleEditMessage = () => {
     logger.debug('メッセージ編集ボタン押下');
-    // 現在のメッセージを取得してモーダルに設定
     const currentMessage = myMemberInfo?.message || '';
     setEditingMessage(currentMessage);
     
-    // ポップアップを閉じてからモーダル表示
     setTimeout(() => {
       setShowMessageModal(true);
     }, 100);
@@ -401,7 +419,6 @@ export default function MapView(props: MapViewProps = {}) {
 
   const handleEditNickname = () => {
     logger.debug('ニックネーム編集ボタン押下');
-    // 現在のニックネームを取得してモーダルに設定
     const currentNickname = myMemberInfo?.nickname || '';
     setEditingNickname(currentNickname);
     setShowMenu(false);
@@ -477,7 +494,6 @@ export default function MapView(props: MapViewProps = {}) {
         logger.debug('ルーム退出成功、/goodbye へリダイレクト');
         setShowExitDialog(false);
         showSuccess('ルームから退出しました。おつかれさま！ 👋');
-        // 少し遅延してからリダイレクト（トーストを見せるため）
         setTimeout(() => {
           navigate('/goodbye');
         }, 1500);
@@ -498,7 +514,7 @@ export default function MapView(props: MapViewProps = {}) {
     setShowExitDialog(false);
   };
 
-  // 位置情報エラーと読み込み状態の判定（安全性重視）
+  // 位置情報エラーと読み込み状態の判定
   logger.debug('位置情報エラー判定デバッグ', {
     hasPosition: !!position,
     loading,
@@ -508,7 +524,6 @@ export default function MapView(props: MapViewProps = {}) {
     errorString: String(error)
   });
 
-  // 確実なエラー検出：位置情報が取得できない場合は必ずエラー画面を表示
   const hasLocationError = !!error;
   const shouldShowError = !position || hasLocationError;
 
@@ -521,7 +536,6 @@ export default function MapView(props: MapViewProps = {}) {
     );
   }
 
-  // 位置情報が取得できない場合は確実にエラー画面を表示
   if (shouldShowError) {
     logger.warn('位置情報エラー画面表示', { 
       hasError: !!error, 
@@ -570,12 +584,10 @@ export default function MapView(props: MapViewProps = {}) {
     );
   }
 
-  // 位置情報共有エラーの表示
   if (sharingError) {
     logger.warn('位置情報共有エラー', { sharingError });
   }
 
-  // メンバー情報エラーの表示
   if (memberError) {
     logger.warn('メンバー情報取得エラー', { memberError });
   }
@@ -587,12 +599,11 @@ export default function MapView(props: MapViewProps = {}) {
     hasMyMemberInfo: !!myMemberInfo
   });
 
-  // JSXレンダリング開始ログ
   logger.debug('MapView JSXレンダリング開始');
 
   return (
     <div className="map-container">
-      {/* メッセージ編集モーダル（最上位に移動） */}
+      {/* メッセージ編集モーダル */}
       {showMessageModal && (
         <div 
           className="message-overlay"
@@ -743,7 +754,7 @@ export default function MapView(props: MapViewProps = {}) {
                 {marker.distance && (
                   <div className="popup-distance">{marker.distance}</div>
                 )}
-                <div className="popup-time">14:32更新</div>
+                <div className="popup-time">{formatUpdateTime(marker.updatedAt)}</div>
                 {marker.isMe && (
                   <button 
                     className="edit-message-btn" 
@@ -788,7 +799,7 @@ export default function MapView(props: MapViewProps = {}) {
         </div>
       )}
 
-      {/* 退出確認ダイアログ（DESIGN.mdルール準拠版） */}
+      {/* 退出確認ダイアログ */}
       {showExitDialog && (
         <div className="menu-overlay">
           <div className="exit-dialog">
