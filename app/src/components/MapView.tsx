@@ -12,6 +12,7 @@ import { testFirestoreConnection, updateMyMessage, updateMyNickname, calculateDi
 import { exitRoom } from '../api/exitRoom';
 import { logger } from '../utils/logger';
 import ToastContainer from './ToastContainer';
+import LoadingComponent from './LoadingComponent'; // 👈 LoadingComponent追加
 
 // 型定義
 interface MarkerData {
@@ -591,9 +592,7 @@ export default function MapView(props: MapViewProps = {}) {
   if (loading) {
     logger.debug('位置情報ローディング中を表示');
     return (
-      <div className="map-loading">
-        <div>地図を読み込み中...</div>
-      </div>
+      <LoadingComponent message="あなたの居場所をさがしてるよ〜📍🔍 ちょっとまっててね！" />
     );
   }
 

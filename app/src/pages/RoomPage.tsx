@@ -4,6 +4,7 @@ import RoomJoinForm from '../components/RoomJoinForm';
 import MapView from '../components/MapView';
 import RoomCreatorWelcome from '../components/RoomCreatorWelcome';
 import Header from '../components/Header';
+import LoadingComponent from '../components/LoadingComponent'; // 👈 LoadingComponent追加
 import { checkRoom } from '../api/checkRoom';
 import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
@@ -170,7 +171,7 @@ export default function RoomPage() {
 
   // ローディング中
   if (isLoading) {
-    return <div style={{ padding: '20px', textAlign: 'center' }}>読み込み中...</div>;
+    return <LoadingComponent />; // 👈 可愛いローディング画面に変更
   }
 
   // デバッグ用状態表示（開発時のみ）
