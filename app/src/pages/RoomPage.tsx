@@ -4,7 +4,7 @@ import RoomJoinForm from '../components/RoomJoinForm';
 import MapView from '../components/MapView';
 import RoomCreatorWelcome from '../components/RoomCreatorWelcome';
 import Header from '../components/Header';
-import LoadingComponent from '../components/LoadingComponent'; // 👈 LoadingComponent追加
+import LoadingComponent from '../components/LoadingComponent';
 import { checkRoom } from '../api/checkRoom';
 import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
@@ -16,10 +16,57 @@ export default function RoomPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [roomId, setRoomId] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const navigate = useNavigate(); // 👈 React Routerのnavigate追加
+  const navigate = useNavigate();
   
   // useEffect実行回数カウント（デバッグ用）
   const executeCountRef = React.useRef(0);
+  
+  // 動的OGP設定（React 19対応）
+  useEffect(() => {
+    // タイトル設定
+    document.title = 'リアルタイムで合流できる地図を開こう - あえるまっぷ';
+    
+    // メタタグ更新
+    const updateMeta = (property: string, content: string) => {
+      let meta = document.querySelector(`meta[property="${property}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('property', property);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', content);
+    };
+
+    const updateTwitterMeta = (name: string, content: string) => {
+      let meta = document.querySelector(`meta[name="${name}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name', name);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', content);
+    };
+
+    // OGP設定
+    updateMeta('og:title', 'リアルタイムで合流できる地図を開こう - あえるまっぷ');
+    updateMeta('og:description', '「今どこ？」はもう卒業！すぐに合流できる地図リンク📍');
+    updateMeta('og:url', `https://onekilowatt.github.io/aerumap/room/${roomId}`);
+    updateMeta('og:image', 'https://onekilowatt.github.io/aerumap/ogp.png');
+    updateMeta('og:type', 'website');
+
+    // Twitter Card設定
+    updateTwitterMeta('twitter:title', 'リアルタイムで合流できる地図を開こう - あえるまっぷ');
+    updateTwitterMeta('twitter:description', '「今どこ？」はもう卒業！すぐに合流できる地図リンク📍');
+    updateTwitterMeta('twitter:image', 'https://onekilowatt.github.io/aerumap/ogp.png');
+
+    // クリーンアップ時にデフォルトに戻す
+    return () => {
+      document.title = 'あえるまっぷ | 友達とリアルタイムで位置を共有できる地図アプリ';
+      updateMeta('og:title', 'あえるまっぷ');
+      updateMeta('og:description', '「今どこ？」のやり取りを省ける、インストール不要のリアルタイム位置共有アプリ。');
+      updateMeta('og:url', 'https://onekilowatt.github.io/aerumap/');
+    };
+  }, [roomId]);
   
   useEffect(() => {
     executeCountRef.current += 1;
@@ -38,7 +85,7 @@ export default function RoomPage() {
         roomId: currentRoomId,
         length: currentRoomId?.length 
       });
-      navigate('/expired', { replace: true }); // 👈 React Routerのnavigate使用
+      navigate('/expired', { replace: true });
       return;
     }
 
@@ -65,7 +112,7 @@ export default function RoomPage() {
       if (!res.found) {
         // 存在しないルームも期限切れページにリダイレクト
         logger.warn('ルームが見つかりません、期限切れページへリダイレクト');
-        navigate('/expired', { replace: true }); // 👈 React Routerのnavigate使用
+        navigate('/expired', { replace: true });
         return;
       }
       
@@ -81,7 +128,7 @@ export default function RoomPage() {
       if (expired) {
         logger.warn('ルームの有効期限が切れています');
         // 期限切れページにリダイレクト
-        navigate('/expired', { replace: true }); // 👈 React Routerのnavigate使用
+        navigate('/expired', { replace: true });
         return;
       }
 
@@ -117,7 +164,7 @@ export default function RoomPage() {
       setError('ルーム確認中にエラーが発生しました');
       setIsLoading(false);
     });
-  }, [navigate]); // 👈 依存配列にnavigateを追加
+  }, [navigate]);
   
   const handleJoinSubmit = useCallback((nickname: string) => {
     logger.success(`ルームに参加: ${nickname}`);
@@ -171,7 +218,7 @@ export default function RoomPage() {
 
   // ローディング中
   if (isLoading) {
-    return <LoadingComponent />; // 👈 可愛いローディング画面に変更
+    return <LoadingComponent />;
   }
 
   // デバッグ用状態表示（開発時のみ）
