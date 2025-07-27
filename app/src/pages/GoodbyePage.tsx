@@ -1,14 +1,17 @@
 // src/pages/GoodbyePage.tsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function GoodbyePage() {
+  const navigate = useNavigate(); // 👈 useNavigate追加
+
   const handleGoHome = () => {
-    window.location.href = '/';
+    navigate('/'); // 👈 React Routerのnavigate使用
   };
 
   const handleCreateNewRoom = () => {
     // 新しいルーム作成ページへ遷移
-    window.location.href = '/?create=true';
+    navigate('/?create=true'); // 👈 React Routerのnavigate使用
   };
 
   return (
