@@ -739,11 +739,18 @@ export default function MapView(props: MapViewProps = {}) {
         {/* マーカー表示 */}
         {markers.map(marker => (
           <Marker
-            key={marker.id}
+            key={`marker-${marker.id}`} // 👈 安定したキーを使用
             {...({ position: [marker.lat, marker.lng] } as any)}
             {...({ icon: createCustomIcon(marker.isMe, marker.nickname) } as any)}
           >
-            <Popup>
+            <Popup
+              {...({ 
+                autoPan: false, // 👈 自動移動を無効化
+                closeOnClick: false, // タップで閉じない
+                autoClose: false, // 他のポップアップが開いても閉じない
+                keepInView: true // 画面内に保持
+              } as any)}
+            >
               <div className="popup-content-leaflet">
                 <div className="popup-nickname">
                   {marker.isMe ? `${marker.nickname}(自分)` : marker.nickname}
