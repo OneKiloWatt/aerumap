@@ -1,4 +1,4 @@
-// src/routes/AppRouter.tsx - BrowserRouter版（きれいなURL）
+// src/routes/AppRouter.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TopPage from "../pages/TopPage";
 import RoomPage from "../pages/RoomPage";
@@ -6,6 +6,8 @@ import NoLocationPage from "../pages/NoLocationPage";
 import GoodbyePage from "../pages/GoodbyePage";
 import TermsPage from "../pages/TermsPage";
 import ExpiredPage from '../pages/ExpiredPage';
+import PrivacyPage from '../pages/PrivacyPage';
+import NotFoundPage from '../pages/NotFoundPage';
 
 export default function AppRouter() {
   // GitHub Pagesのbasename設定
@@ -23,8 +25,9 @@ export default function AppRouter() {
         <Route path="/no-location" element={<NoLocationPage />} />
         <Route path="/goodbye" element={<GoodbyePage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/expired" element={<ExpiredPage />} />
-        <Route path="*" element={<div>404 Not Found</div>} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );

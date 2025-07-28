@@ -1,0 +1,237 @@
+/* PrivacyPageContentのスタイル */
+
+.privacy-main {
+  padding-top: 70px; /* ヘッダー50px + 余白20px */
+  padding-bottom: 40px;
+  background-color: #F5F2EB;
+  min-height: 100vh;
+}
+
+.privacy-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 60px; /* 横のpaddingを増やして読みやすさを保つ */
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* ヘッダーセクション */
+.privacy-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #8FBC8F;
+}
+
+.privacy-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #8B4513;
+  margin-bottom: 16px;
+  font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+}
+
+.privacy-description {
+  font-size: 16px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.privacy-updated {
+  font-size: 14px;
+  color: #888888;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* コンテンツ全体 */
+.privacy-content {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333333;
+}
+
+/* 各セクション */
+.privacy-section {
+  margin-bottom: 32px;
+}
+
+.privacy-section-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2F4F2F;
+  margin-bottom: 16px;
+  padding-left: 12px;
+  border-left: 4px solid #8FBC8F;
+}
+
+.privacy-section p {
+  margin-bottom: 12px;
+}
+
+.privacy-section p:last-child {
+  margin-bottom: 0;
+}
+
+/* サブセクション */
+.privacy-subsection {
+  margin-bottom: 20px;
+}
+
+.privacy-subsection-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #2F4F2F;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* テーブル */
+.privacy-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  background-color: #FAFAFA;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.privacy-table th,
+.privacy-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.privacy-table th {
+  background-color: #8FBC8F;
+  color: #FFFFFF;
+  font-weight: bold;
+}
+
+.privacy-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* リスト */
+.privacy-list {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.privacy-list li {
+  margin-bottom: 8px;
+}
+
+/* 注意ボックス */
+.privacy-warning {
+  background-color: #FFF8DC;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #F0E68C;
+  margin-bottom: 16px;
+}
+
+.privacy-warning p {
+  margin: 0;
+  font-weight: bold;
+  color: #8B4513;
+}
+
+/* 重要情報ボックス */
+.privacy-important {
+  background-color: #E8F5E8;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #8FBC8F;
+  margin-bottom: 16px;
+}
+
+.privacy-important p {
+  margin: 0;
+  color: #2F4F2F;
+}
+
+/* 年齢制限ボックス */
+.privacy-age-restriction {
+  background-color: #FFE4E1;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #FFC0CB;
+}
+
+.privacy-age-restriction p {
+  margin: 0;
+  font-weight: bold;
+  color: #8B4513;
+}
+
+/* お問い合わせセクション */
+.privacy-contact {
+  background-color: #8FBC8F;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.privacy-contact-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #FFFFFF;
+  margin-bottom: 16px;
+}
+
+.privacy-contact p {
+  color: #FFFFFF;
+  margin: 0 0 12px 0;
+}
+
+.privacy-contact-link {
+  color: #FFFFFF;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.privacy-contact-link:hover {
+  color: #E8F5E8;
+}
+
+.privacy-contact-note {
+  font-size: 14px;
+  color: #E8F5E8;
+  margin-top: 8px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .privacy-main {
+    padding-top: 50px; /* ヘッダー分だけ */
+    padding-bottom: 0;
+  }
+  
+  .privacy-container {
+    margin: 0; /* 左右の隙間を完全になくす */
+    padding: 30px 20px; /* 上下padding少し減らす */
+    border-radius: 0; /* 角丸をなくしてフルスクリーン感 */
+    box-shadow: none; /* 影もなくす */
+  }
+  
+  .privacy-title {
+    font-size: 28px;
+  }
+  
+  .privacy-table {
+    font-size: 14px;
+  }
+  
+  .privacy-table th,
+  .privacy-table td {
+    padding: 8px 12px;
+  }
+}

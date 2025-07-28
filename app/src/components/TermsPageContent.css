@@ -1,0 +1,159 @@
+/* TermsPageContentのスタイル */
+
+.terms-main {
+  padding-top: 70px; /* ヘッダー50px + 余白20px */
+  padding-bottom: 40px;
+  background-color: #F5F2EB;
+  min-height: 100vh;
+}
+
+.terms-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 60px; /* 横のpaddingを増やして読みやすさを保つ */
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* ヘッダーセクション */
+.terms-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #8FBC8F;
+}
+
+.terms-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #8B4513;
+  margin-bottom: 16px;
+  font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+}
+
+.terms-description {
+  font-size: 16px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* コンテンツ全体 */
+.terms-content {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333333;
+}
+
+/* 各条項セクション */
+.terms-section {
+  margin-bottom: 32px;
+}
+
+.terms-section-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2F4F2F;
+  margin-bottom: 16px;
+  padding-left: 12px;
+  border-left: 4px solid #8FBC8F;
+}
+
+.terms-section p {
+  margin-bottom: 12px;
+}
+
+.terms-section p:last-child {
+  margin-bottom: 0;
+}
+
+/* リスト */
+.terms-list {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.terms-list li {
+  margin-bottom: 8px;
+}
+
+/* 警告ボックス */
+.terms-warning {
+  background-color: #FFF8DC;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #F0E68C;
+  margin-bottom: 16px;
+}
+
+.terms-warning p {
+  margin: 0;
+  font-weight: bold;
+  color: #8B4513;
+}
+
+/* 年齢制限ボックス */
+.terms-age-restriction {
+  background-color: #FFE4E1;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #FFC0CB;
+}
+
+.terms-age-restriction p {
+  margin: 0;
+  font-weight: bold;
+  color: #8B4513;
+}
+
+/* お問い合わせセクション */
+.terms-contact {
+  background-color: #8FBC8F;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.terms-contact-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #FFFFFF;
+  margin-bottom: 16px;
+}
+
+.terms-contact p {
+  color: #FFFFFF;
+  margin: 0 0 12px 0;
+}
+
+.terms-contact-link {
+  color: #FFFFFF;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.terms-contact-link:hover {
+  color: #E8F5E8;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .terms-main {
+    padding-top: 50px; /* ヘッダー分だけ */
+    padding-bottom: 0;
+  }
+  
+  .terms-container {
+    margin: 0; /* 左右の隙間を完全になくす */
+    padding: 30px 20px; /* 上下padding少し減らす */
+    border-radius: 0; /* 角丸をなくしてフルスクリーン感 */
+    box-shadow: none; /* 影もなくす */
+  }
+  
+  .terms-title {
+    font-size: 28px;
+  }
+}
