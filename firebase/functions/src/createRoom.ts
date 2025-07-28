@@ -18,21 +18,6 @@ function generateRoomId(): string {
 }
 
 /**
- * IP地域チェック（日本国内のみ許可）
- * 注意: この実装は簡易版です。本格的には外部APIやGeoIPデータベースを使用
- */
-function isJapaneseIP(ip: string): boolean {
-  // 開発環境やローカルホストは許可
-  if (ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-    return true;
-  }
-  
-  // TODO: 本格的なGeoIP判定の実装が必要
-  // 現在は簡易チェックのみ
-  return true; // 一時的に全て許可
-}
-
-/**
  * レート制限チェック（同一IPから30分に5回まで）
  */
 async function checkRateLimit(ip: string): Promise<boolean> {
@@ -140,13 +125,6 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
 
   try {
     console.log('CreateRoom request from IP:', clientIP);
-
-    // IP地域チェック（日本国内のみ）
-    if (!isJapaneseIP(clientIP)) {
-      await logAccess(clientIP, uid, false, 'IP_REGION_BLOCKED');
-      res.status(403).json({ error: 'Access from outside Japan is not allowed' });
-      return;
-    }
 
     // レート制限チェック
     const rateLimitPassed = await checkRateLimit(clientIP);

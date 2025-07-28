@@ -6,20 +6,6 @@ import { Request, Response } from 'express';
 const db = admin.firestore();
 
 /**
- * IP地域チェック（日本国内のみ許可）
- */
-function isJapaneseIP(ip: string): boolean {
-  // 開発環境やローカルホストは許可
-  if (ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-    return true;
-  }
-  
-  // TODO: 本格的なGeoIP判定の実装が必要
-  // 現在は簡易チェックのみ
-  return true; // 一時的に全て許可
-}
-
-/**
  * レート制限チェック（同一IPで5回連続失敗 → 一時ブロック）
  */
 async function checkJoinRateLimit(ip: string, success: boolean): Promise<boolean> {
@@ -139,13 +125,6 @@ export const joinRoom = functions.https.onRequest(async (req: Request, res: Resp
 
   try {
     console.log('JoinRoom request from IP:', clientIP);
-
-    // IP地域チェック（日本国内のみ）
-    if (!isJapaneseIP(clientIP)) {
-      await logAccess(clientIP, uid, roomId, false, 'IP_REGION_BLOCKED');
-      res.status(403).json({ success: false, error: 'Access from outside Japan is not allowed' });
-      return;
-    }
 
     // 認証トークンの検証
     const authHeader = req.headers.authorization;

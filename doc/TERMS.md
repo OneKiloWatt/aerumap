@@ -99,4 +99,3 @@ APIアクセスに関するログ（IPアドレス、UID、タイムスタンプ
 
 サービスに関するお問い合わせは、以下のGitHubリポジトリよりお願いいたします：  
 https://github.com/OneKiloWatt/aerumap
-
