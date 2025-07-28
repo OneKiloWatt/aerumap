@@ -2,12 +2,19 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Redirecting...</title>
+  <title>あえるまっぷ | 友達とリアルタイムで位置を共有できる地図アプリ</title>
+  
+  <!-- index.htmlと同じOGP設定 -->
+  <meta property="og:title" content="あえるまっぷ" />
+  <meta property="og:description" content="「今どこ？」のやり取りを省ける、インストール不要のリアルタイム位置共有アプリ。" />
+  <meta property="og:image" content="https://onekilowatt.github.io/aerumap/ogp.png" />
+  <meta property="og:url" content="https://onekilowatt.github.io/aerumap/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="あえるまっぷ" />
+  
   <script type="text/javascript">
-    // GitHub Pages SPA hack for handling direct URL access
-    // pathSegmentsToKeepを1に設定（/aerumap/ の部分を保持）
+    // GitHub Pages SPA redirect
     var pathSegmentsToKeep = 1;
-    
     var l = window.location;
     l.replace(
       l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
