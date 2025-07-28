@@ -17,13 +17,6 @@ async function verifyAuthToken(req: Request): Promise<string | null> {
   }
 }
 
-function isJapaneseIP(ip: string): boolean {
-  if (ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-    return true;
-  }
-  return true; // 仮許可中
-}
-
 async function checkRateLimit(ip: string): Promise<boolean> {
   const rateLimitRef = db.collection('rateLimits').doc(`checkRoom_${ip}`);
   const now = new Date();
@@ -102,12 +95,6 @@ export const checkRoom = functions.https.onRequest(async (req: Request, res: Res
       return;
     }
 
-    if (!isJapaneseIP(clientIP)) {
-      await logAccess(clientIP, roomId, false, 'IP_REGION_BLOCKED');
-      res.status(403).json({ exists: false, expired: true, error: 'Access from outside Japan is not allowed' });
-      return;
-    }
-
     const rateLimitPassed = await checkRateLimit(clientIP);
     if (!rateLimitPassed) {
       await logAccess(clientIP, roomId, false, 'RATE_LIMIT_EXCEEDED');
@@ -153,4 +140,3 @@ export const checkRoom = functions.https.onRequest(async (req: Request, res: Res
     res.status(500).json({ exists: false, expired: true, error: 'Internal server error' });
   }
 });
-
