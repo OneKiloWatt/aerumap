@@ -27,8 +27,6 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="あえるまっぷ" />
 
-
-
     <link rel="apple-touch-icon" href="https://onekilowatt.github.io/aerumap/logo192.png" />
     <link rel="manifest" href="https://onekilowatt.github.io/aerumap/manifest.json" />
 
@@ -84,22 +82,44 @@
     </style>
 
     <script type="text/javascript">
-      // URLからルームIDを取得
-      const urlParams = new URLSearchParams(window.location.search);
-      const roomId = urlParams.get('id');
-      
-      if (roomId) {
-        // クローラー待機後（十分な時間を確保）、綺麗なURLにリダイレクト
-        setTimeout(() => {
-          window.location.replace(`/aerumap/room/${roomId}`);
-        }, 300); // 300ms待機でOGPクローラーを確実に待つ
+      // GitHub Pages SPA redirect
+      (function() {
+        const l = window.location;
         
-      } else {
-        // roomIdがない場合はトップページへ
-        setTimeout(() => {
-          window.location.replace('/aerumap/');
-        }, 100);
-      }
+        // URLからルームIDを取得（レガシー対応）
+        const urlParams = new URLSearchParams(l.search);
+        const roomId = urlParams.get('id');
+        
+        if (roomId) {
+          // レガシーなroom.html?id=xxx形式の場合
+          setTimeout(() => {
+            window.location.replace(`/aerumap/room/${roomId}`);
+          }, 300);
+        } else {
+          // 通常のSPAルーティング対応
+          const pathSegmentsToKeep = 1; // /aerumap/ の部分を保持
+          
+          // 現在のパスを /?/パス の形式でindex.htmlにリダイレクト
+          const redirectPath = l.pathname.split('/').slice(pathSegmentsToKeep + 1).join('/');
+          
+          if (redirectPath) {
+            // パスがある場合（/no-location, /terms など）
+            const newUrl = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+              '/aerumap/' + '?/' + redirectPath +
+              (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+              l.hash;
+            
+            setTimeout(() => {
+              window.location.replace(newUrl);
+            }, 100);
+          } else {
+            // パスがない場合はトップページへ
+            setTimeout(() => {
+              window.location.replace('/aerumap/');
+            }, 100);
+          }
+        }
+      })();
 
       // ドットアニメーション: . → .. → ... → 繰り返し
       let dotCount = 1;
