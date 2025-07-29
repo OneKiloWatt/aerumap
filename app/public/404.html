@@ -1,31 +1,146 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>あえるまっぷ | 友達とリアルタイムで位置を共有できる地図アプリ</title>
-  
-  <!-- index.htmlと同じOGP設定 -->
-  <meta property="og:title" content="あえるまっぷ" />
-  <meta property="og:description" content="「今どこ？」のやり取りを省ける、インストール不要のリアルタイム位置共有アプリ。" />
-  <meta property="og:image" content="https://onekilowatt.github.io/aerumap/ogp.png" />
-  <meta property="og:url" content="https://onekilowatt.github.io/aerumap/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="あえるまっぷ" />
-  
-  <script type="text/javascript">
-    // GitHub Pages SPA redirect
-    var pathSegmentsToKeep = 1;
-    var l = window.location;
-    l.replace(
-      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-      l.hash
-    );
-  </script>
-</head>
-<body>
-  <p>リダイレクト中...</p>
-</body>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="https://onekilowatt.github.io/aerumap/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#8FBC8F" />
+    <meta name="robots" content="index, follow" />
+
+    <title>あえるまっぷ | 友達とリアルタイムで位置を共有できる地図アプリ</title>
+
+    <meta
+      name="description"
+      content="「今どこ？」のやり取りを省いて、待ち合わせをもっとスムーズに。あえるまっぷは、友達・家族・恋人とリアルタイムで位置を共有できるインストール不要のWebアプリです。"
+    />
+    <meta
+      name="keywords"
+      content="あえるまっぷ, 位置共有, 地図アプリ, リアルタイム, 待ち合わせ, GPS, ブラウザアプリ"
+    />
+    <link rel="canonical" href="https://onekilowatt.github.io/aerumap/" />
+
+    <!-- OGP（SNS対応） -->
+    <meta property="og:title" content="あえるまっぷ" />
+    <meta property="og:description" content="「今どこ？」のやり取りを省ける、インストール不要のリアルタイム位置共有アプリ。" />
+    <meta property="og:image" content="https://onekilowatt.github.io/aerumap/ogp.png" />
+    <meta property="og:url" content="https://onekilowatt.github.io/aerumap/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="あえるまっぷ" />
+
+
+
+    <link rel="apple-touch-icon" href="https://onekilowatt.github.io/aerumap/logo192.png" />
+    <link rel="manifest" href="https://onekilowatt.github.io/aerumap/manifest.json" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <style>
+      /* LoadingComponentと同じスタイル */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      .loading-container {
+        min-height: 100vh;
+        background: #F5F2EB;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .loading-image-wrapper {
+        margin-bottom: 30px;
+      }
+
+      .loading-image {
+        width: 120px;
+        height: 180px;
+        object-fit: contain;
+      }
+
+      .loading-title {
+        font-size: 24px;
+        color: #8B4513;
+        margin-bottom: 15px;
+        font-weight: bold;
+      }
+
+      .loading-message {
+        font-size: 16px;
+        color: #666;
+        text-align: center;
+        line-height: 1.6;
+        max-width: 300px;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+
+    <script type="text/javascript">
+      // URLからルームIDを取得
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomId = urlParams.get('id');
+      
+      if (roomId) {
+        // クローラー待機後（十分な時間を確保）、綺麗なURLにリダイレクト
+        setTimeout(() => {
+          window.location.replace(`/aerumap/room/${roomId}`);
+        }, 300); // 300ms待機でOGPクローラーを確実に待つ
+        
+      } else {
+        // roomIdがない場合はトップページへ
+        setTimeout(() => {
+          window.location.replace('/aerumap/');
+        }, 100);
+      }
+
+      // ドットアニメーション: . → .. → ... → 繰り返し
+      let dotCount = 1;
+      function animateDots() {
+        const titleElement = document.getElementById('loading-title');
+        if (titleElement) {
+          const dots = '.'.repeat(dotCount);
+          titleElement.textContent = `Now Loading${dots}`;
+          dotCount = dotCount >= 3 ? 1 : dotCount + 1;
+        }
+      }
+
+      // ページ読み込み後にドットアニメーション開始
+      window.addEventListener('DOMContentLoaded', () => {
+        setInterval(animateDots, 500);
+      });
+    </script>
+  </head>
+
+  <body>
+    <noscript>JavaScriptを有効にしてください。</noscript>
+    
+    <div class="loading-container">
+      <!-- メイン画像 -->
+      <div class="loading-image-wrapper">
+        <img 
+          src="https://onekilowatt.github.io/aerumap/images/nowloading.png" 
+          alt="読み込み中" 
+          class="loading-image"
+        />
+      </div>
+
+      <!-- Now Loading... -->
+      <h1 class="loading-title" id="loading-title">
+        Now Loading.
+      </h1>
+
+      <!-- メッセージ -->
+      <p class="loading-message">
+        ちょっとまっててねっ！おへやのかざり、がんばってるところ〜🎀✨
+      </p>
+    </div>
+  </body>
 </html>

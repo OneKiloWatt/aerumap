@@ -7,12 +7,13 @@ import './MapView.css';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useLocationSharing } from '../hooks/useLocationSharing';
 import { useMyMemberInfo } from '../hooks/useMyMemberInfo';
+import { useRoomExpiry } from '../hooks/useRoomExpiry';
 import { useToast } from '../hooks/useToast';
 import { testFirestoreConnection, updateMyMessage, updateMyNickname, calculateDistance } from '../api/locationApi';
 import { exitRoom } from '../api/exitRoom';
 import { logger } from '../utils/logger';
 import ToastContainer from './ToastContainer';
-import LoadingComponent from './LoadingComponent'; // 👈 LoadingComponent追加
+import LoadingComponent from './LoadingComponent';
 
 // 型定義
 interface MarkerData {
@@ -23,7 +24,7 @@ interface MarkerData {
   lng: number;
   isMe: boolean;
   distance?: string;
-  updatedAt: Date; // 👈 更新時刻を追加
+  updatedAt: Date;
 }
 
 interface MapViewProps {
@@ -134,6 +135,12 @@ export default function MapView(props: MapViewProps = {}) {
     loading: memberLoading, 
     error: memberError 
   } = useMyMemberInfo(roomId || '');
+
+  // 🆕 期限切れ監視フック（位置情報確定時のみ有効）
+  const { isExpired, expiresAt } = useRoomExpiry({
+    roomId: roomId || '',
+    enabled: !!roomId && !!position && !loading && !error
+  });
   
   // 位置情報の状態ログ
   logger.debug('位置情報状態', { 
@@ -143,8 +150,44 @@ export default function MapView(props: MapViewProps = {}) {
     isSharing,
     otherUsersCount: otherUsers.length,
     hasMyMemberInfo: !!myMemberInfo,
-    memberLoading
+    memberLoading,
+    isExpired,
+    expiresAt: expiresAt?.toISOString()
   });
+
+  // 🆕 期限切れ時の自動退出処理
+  React.useEffect(() => {
+    if (!isExpired || !roomId) return;
+
+    logger.warn('ルーム期限切れを検出、自動退出処理を開始', { 
+      roomId: roomId.substring(0, 4) + '***',
+      expiresAt: expiresAt?.toISOString()
+    });
+
+    // 自動退出処理
+    const performAutoExit = async () => {
+      try {
+        // 退出API呼び出し（位置情報とメンバー情報をクリーンアップ）
+        const result = await exitRoom(roomId);
+        logger.debug('自動退出API実行結果', { success: result.success });
+      } catch (error) {
+        // 退出に失敗してもリダイレクトは実行する（Firestoreエラー時の安全な処理）
+        logger.error('自動退出API失敗、リダイレクトは継続', error);
+      } finally {
+        // ExpiredPageへリダイレクト（Firestoreエラーに関係なく実行）
+        logger.debug('期限切れページへリダイレクト');
+        try {
+          navigate('/expired', { replace: true });
+        } catch (navError) {
+          // ナビゲーションエラー時は強制リロード
+          logger.error('ナビゲーション失敗、強制リロード', navError);
+          window.location.href = '/expired';
+        }
+      }
+    };
+
+    performAutoExit();
+  }, [isExpired, roomId, navigate, expiresAt]);
 
   // リアルタイム通知用：前回のotherUsers状態を記録
   const prevOtherUsersRef = React.useRef<typeof otherUsers>([]);
@@ -260,7 +303,7 @@ export default function MapView(props: MapViewProps = {}) {
       const moveToUserLocation = () => {
         if (mapRef.current) {
           logger.debug('地図インスタンス確認済み、移動実行');
-          mapRef.current.setView(position, 16, { 
+          mapRef.current.setView(position, 18, { 
             animate: true, 
             duration: 1.5 
           });
@@ -381,9 +424,9 @@ export default function MapView(props: MapViewProps = {}) {
 
       if (coordinates.length === 1) {
         const [lat, lng] = coordinates[0];
-        mapRef.current.setView([lat, lng], 16, { animate: true, duration: 1.0 });
+        mapRef.current.setView([lat, lng], 18, { animate: true, duration: 1.0 });
         
-        logger.debug('単一マーカー中央表示', { lat, lng, zoom: 16 });
+        logger.debug('単一マーカー中央表示', { lat, lng, zoom: 18 });
         showInfo('現在位置に移動しました 📍');
       } else {
         const bounds = L.latLngBounds(coordinates);
@@ -624,8 +667,10 @@ export default function MapView(props: MapViewProps = {}) {
           
           <div className="location-error-actions">
             <a 
-              href="/no-location" 
+              href={`${process.env.PUBLIC_URL || ''}/no-location`}
               className="location-help-btn"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               📖 位置情報の設定方法を見る
             </a>
@@ -781,10 +826,12 @@ export default function MapView(props: MapViewProps = {}) {
         </div>
       )}
 
-      {/* 実際の地図 */}
+      {/* 地図 */}
       <MapContainer
         center={INITIAL_CENTER}
         zoom={16}
+        minZoom={10}
+        maxZoom={20}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
       >
