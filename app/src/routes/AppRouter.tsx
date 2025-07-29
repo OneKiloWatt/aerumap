@@ -11,9 +11,7 @@ import NotFoundPage from '../pages/NotFoundPage';
 
 export default function AppRouter() {
   // GitHub Pagesのbasename設定
-  const basename = process.env.NODE_ENV === 'production' 
-    ? '/aerumap'
-    : '';
+  const basename = process.env.PUBLIC_URL || '';
 
   console.log('Using BrowserRouter with basename:', basename);
 
