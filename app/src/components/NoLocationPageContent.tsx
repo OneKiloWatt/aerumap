@@ -62,7 +62,8 @@ export default function NoLocationPageContent() {
     if (window.opener) {
       window.opener.location.reload(); // 元のページを再読み込み
     } else {
-      window.location.href = '/'; // 単独タブの場合はトップに戻る
+      const basename = process.env.PUBLIC_URL || '';
+      window.location.href = `${basename}/`; // 単独タブの場合はトップに戻る
     }
   };
 
@@ -348,14 +349,6 @@ export default function NoLocationPageContent() {
             >
               🔄 設定完了、戻って試してみる
             </button>
-            <a 
-              href="/"
-              className="home-button"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              🏠 トップページに戻る
-            </a>
           </div>
         </div>
       </div>
