@@ -1,0 +1,30 @@
+User-agent: *
+
+# 公開ページ（SEO対象）
+Allow: /
+Allow: /terms
+Allow: /privacy
+
+# プライベート・内部ページ（クロール禁止）
+Disallow: /room/
+Disallow: /room.html
+Disallow: /no-location
+Disallow: /goodbye  
+Disallow: /expired
+
+# 静的リソースは許可
+Allow: /images/
+Allow: /*.css
+Allow: /*.js
+Allow: /favicon.ico
+Allow: /manifest.json
+
+# サイトマップの場所
+Sitemap: https://onekilowatt.github.io/aerumap/sitemap.xml
+
+# 主要検索エンジン向けの追加設定
+User-agent: Googlebot
+Crawl-delay: 1
+
+User-agent: Bingbot  
+Crawl-delay: 1
