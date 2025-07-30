@@ -111,7 +111,7 @@ export default function MapView(props: MapViewProps = {}) {
   const geolocationOptions = useMemo(() => ({
     enableHighAccuracy: true,
     timeout: 10000,
-    maximumAge: 60000,
+    maximumAge: 5000,  // 🔧 60秒 → 5秒に短縮（古いキャッシュ防止）
     watchPosition: true,
   }), []);
   
