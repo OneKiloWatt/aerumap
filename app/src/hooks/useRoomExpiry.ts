@@ -23,8 +23,15 @@ export function useRoomExpiry({ roomId, enabled }: UseRoomExpiryOptions): UseRoo
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    logger.debug('🔥 useRoomExpiry useEffect 実行開始', { 
+      enabled, 
+      roomId: roomId ? roomId.substring(0, 4) + '***' : 'なし',
+      timestamp: new Date().toISOString()
+    });
+
     // 位置情報が確定していない場合は監視しない
     if (!enabled || !roomId) {
+      logger.debug('期限切れ監視スキップ', { enabled, hasRoomId: !!roomId });
       setLoading(false);
       setIsExpired(false);
       setError(null);
@@ -61,11 +68,15 @@ export function useRoomExpiry({ roomId, enabled }: UseRoomExpiryOptions): UseRoo
         const now = new Date();
         const expired = now > expiresAtDate;
 
-        logger.debug('期限チェック結果', {
+        // 🔧 時刻比較の詳細デバッグ
+        logger.debug('期限チェック結果（詳細）', {
           roomId: roomId.substring(0, 4) + '***',
           expiresAt: expiresAtDate.toISOString(),
+          expiresAtTime: expiresAtDate.getTime(),
           now: now.toISOString(),
+          nowTime: now.getTime(),
           expired,
+          timeDifference: now.getTime() - expiresAtDate.getTime(),
           remainingMinutes: Math.max(0, Math.floor((expiresAtDate.getTime() - now.getTime()) / (1000 * 60)))
         });
 
@@ -83,11 +94,18 @@ export function useRoomExpiry({ roomId, enabled }: UseRoomExpiryOptions): UseRoo
       }
     );
 
-    // 定期的な期限チェック（1分おき）
+    // 🔧 定期的な期限チェック（1分おき）
     const checkInterval = setInterval(() => {
       if (expiresAt) {
         const now = new Date();
         const expired = now > expiresAt;
+        
+        logger.debug('定期期限チェック実行', { 
+          roomId: roomId.substring(0, 4) + '***',
+          now: now.toISOString(),
+          expiresAt: expiresAt.toISOString(),
+          expired
+        });
         
         if (expired && !isExpired) {
           logger.warn('定期チェックで期限切れを検出', {
@@ -98,7 +116,7 @@ export function useRoomExpiry({ roomId, enabled }: UseRoomExpiryOptions): UseRoo
           setIsExpired(true);
         }
       }
-    }, 60 * 1000); // 1分おき
+    }, 30 * 1000); // 30秒おき（期限切れ検出を早める）
 
     // クリーンアップ
     return () => {
@@ -106,7 +124,7 @@ export function useRoomExpiry({ roomId, enabled }: UseRoomExpiryOptions): UseRoo
       unsubscribe();
       clearInterval(checkInterval);
     };
-  }, [roomId, enabled, expiresAt, isExpired]);
+  }, [roomId, enabled, Math.floor(Date.now() / 30000)]); // 🔥 30秒ごとに強制再実行
 
   return {
     isExpired,
