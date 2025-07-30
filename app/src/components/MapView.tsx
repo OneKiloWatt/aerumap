@@ -107,13 +107,13 @@ export default function MapView(props: MapViewProps = {}) {
   // 位置情報フック
   logger.debug('useGeolocation フック呼び出し開始');
   
-  // オプションをメモ化せずに直接設定（キャッシュ問題回避）
-  const geolocationOptions = {
+  // 🔧 オプションをメモ化（無限再レンダリング防止）
+  const geolocationOptions = useMemo(() => ({
     enableHighAccuracy: true,
     timeout: 10000,
     maximumAge: 60000,
     watchPosition: true,
-  };
+  }), []);
   
   const { position, loading, error } = useGeolocation(geolocationOptions);
   
@@ -139,7 +139,7 @@ export default function MapView(props: MapViewProps = {}) {
   // 🆕 期限切れ監視フック（位置情報確定時のみ有効）
   const { isExpired, expiresAt } = useRoomExpiry({
     roomId: roomId || '',
-    enabled: !!roomId && !!position && !loading && !error
+    enabled: !!roomId && !!position && !loading
   });
   
   // 位置情報の状態ログ
@@ -167,19 +167,14 @@ export default function MapView(props: MapViewProps = {}) {
     // 自動退出処理
     const performAutoExit = async () => {
       try {
-        // 退出API呼び出し（位置情報とメンバー情報をクリーンアップ）
         const result = await exitRoom(roomId);
         logger.debug('自動退出API実行結果', { success: result.success });
       } catch (error) {
-        // 退出に失敗してもリダイレクトは実行する（Firestoreエラー時の安全な処理）
         logger.error('自動退出API失敗、リダイレクトは継続', error);
       } finally {
-        // ExpiredPageへリダイレクト（Firestoreエラーに関係なく実行）
-        logger.debug('期限切れページへリダイレクト');
         try {
           navigate('/expired', { replace: true });
         } catch (navError) {
-          // ナビゲーションエラー時は強制リロード
           logger.error('ナビゲーション失敗、強制リロード', navError);
           window.location.href = '/expired';
         }
@@ -289,7 +284,7 @@ export default function MapView(props: MapViewProps = {}) {
         onMapReady();
       }
     }
-  }, [loading, position, mapReady, onMapReady]);
+  }, [loading, position, mapReady]); // 🔧 onMapReadyを依存配列から除外
 
   // 🔧 新機能：自分の位置が確定したら地図を移動（ブラウザ互換性対応）
   React.useEffect(() => {
@@ -303,7 +298,7 @@ export default function MapView(props: MapViewProps = {}) {
       const moveToUserLocation = () => {
         if (mapRef.current) {
           logger.debug('地図インスタンス確認済み、移動実行');
-          mapRef.current.setView(position, 18, { 
+          mapRef.current.setView(position, 16, { 
             animate: true, 
             duration: 1.5 
           });
@@ -424,9 +419,9 @@ export default function MapView(props: MapViewProps = {}) {
 
       if (coordinates.length === 1) {
         const [lat, lng] = coordinates[0];
-        mapRef.current.setView([lat, lng], 18, { animate: true, duration: 1.0 });
+        mapRef.current.setView([lat, lng], 16, { animate: true, duration: 1.0 });
         
-        logger.debug('単一マーカー中央表示', { lat, lng, zoom: 18 });
+        logger.debug('単一マーカー中央表示', { lat, lng, zoom: 16 });
         showInfo('現在位置に移動しました 📍');
       } else {
         const bounds = L.latLngBounds(coordinates);
@@ -436,7 +431,7 @@ export default function MapView(props: MapViewProps = {}) {
           paddingBottomRight: [50, 50] as [number, number],
           animate: true,
           duration: 1.0,
-          maxZoom: 18
+          maxZoom: 18  // maxZoomを18に変更
         };
         
         mapRef.current.fitBounds(bounds, paddingOptions);
@@ -667,10 +662,8 @@ export default function MapView(props: MapViewProps = {}) {
           
           <div className="location-error-actions">
             <a 
-              href={`${process.env.PUBLIC_URL || ''}/no-location`}
+              href="/no-location" 
               className="location-help-btn"
-              target="_blank"
-              rel="noopener noreferrer"
             >
               📖 位置情報の設定方法を見る
             </a>
@@ -826,12 +819,10 @@ export default function MapView(props: MapViewProps = {}) {
         </div>
       )}
 
-      {/* 地図 */}
+      {/* 実際の地図 */}
       <MapContainer
         center={INITIAL_CENTER}
         zoom={16}
-        minZoom={10}
-        maxZoom={20}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
       >
@@ -841,6 +832,8 @@ export default function MapView(props: MapViewProps = {}) {
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          maxZoom={18}
+          minZoom={1}
         />
         
         {/* マーカー表示 */}
