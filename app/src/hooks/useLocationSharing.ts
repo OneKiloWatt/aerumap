@@ -32,6 +32,18 @@ export function useLocationSharing(options: UseLocationSharingOptions): UseLocat
   const lastSentTimeRef = useRef<number>(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
+  
+  // 🔧 修正: 最新の位置情報を参照するためのref
+  const positionRef = useRef<[number, number] | null>(position);
+
+  // 🔧 修正: positionが変化したときにrefを更新
+  useEffect(() => {
+    positionRef.current = position;
+    logger.debug('positionRef更新', { 
+      hasPosition: !!position,
+      position: position ? [position[0], position[1]] : null
+    });
+  }, [position]);
 
   /**
    * 位置情報送信判定（シンプル版）
@@ -138,11 +150,15 @@ export function useLocationSharing(options: UseLocationSharingOptions): UseLocat
     unsubscribeRef.current = unsubscribe;
     logger.debug('位置情報リアルタイム監視設定完了');
 
-    // 定期送信のためのインターバル（30秒）
+    // 🔧 修正: 定期送信のためのインターバル（30秒）- positionRefを使用
     intervalRef.current = setInterval(() => {
-      if (position) {
-        logger.debug('定期送信実行', { hasPosition: !!position });
-        sendLocationIfNeeded(position);
+      const currentPosition = positionRef.current;
+      if (currentPosition) {
+        logger.debug('定期送信実行', { 
+          hasPosition: !!currentPosition,
+          position: [currentPosition[0], currentPosition[1]]
+        });
+        sendLocationIfNeeded(currentPosition);
       } else {
         logger.debug('定期送信スキップ（位置情報なし）');
       }
@@ -204,11 +220,12 @@ export function useLocationSharing(options: UseLocationSharingOptions): UseLocat
         }
         logger.debug('位置共有一時停止（バックグラウンド）');
       } else {
-        // フォアグラウンド復帰時は送信再開
+        // 🔧 修正: フォアグラウンド復帰時は送信再開 - positionRefを使用
         if (isSharing && !intervalRef.current) {
           intervalRef.current = setInterval(() => {
-            if (position) {
-              sendLocationIfNeeded(position);
+            const currentPosition = positionRef.current;
+            if (currentPosition) {
+              sendLocationIfNeeded(currentPosition);
             }
           }, 30000);
           logger.debug('位置共有再開（フォアグラウンド）');
@@ -221,7 +238,7 @@ export function useLocationSharing(options: UseLocationSharingOptions): UseLocat
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isSharing, position, sendLocationIfNeeded]);
+  }, [isSharing, sendLocationIfNeeded]);
 
   // クリーンアップ
   useEffect(() => {
