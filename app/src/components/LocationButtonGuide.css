@@ -1,0 +1,103 @@
+/* LocationButtonGuide.css - 右下ボタン向け吹き出し */
+.location-guide-tooltip {
+  position: fixed;
+  bottom: 100px; /* 現在位置ボタンの上に配置 */
+  right: 20px;
+  z-index: 1500;
+  max-width: 280px;
+  pointer-events: auto;
+}
+
+.location-tooltip-content {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 2px solid #8FBC8F;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.location-tooltip-character {
+  flex-shrink: 0;
+}
+
+.location-tooltip-character img {
+  width: 50px;
+  height: auto;
+  border-radius: 8px;
+}
+
+.location-tooltip-message {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-tooltip-message h3 {
+  font-size: 16px;
+  color: #8B4513;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.location-tooltip-message p {
+  font-size: 14px;
+  color: #333;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.location-sub-message {
+  color: #8B4513 !important;
+  font-weight: bold;
+  font-size: 13px !important;
+}
+
+/* 矢印（現在位置ボタンを指す） */
+.location-tooltip-arrow {
+  position: absolute;
+  bottom: -8px;
+  right: 40px; /* ボタンの中心付近を指すように調整 */
+  width: 16px;
+  height: 16px;
+  background: white;
+  border: 2px solid #8FBC8F;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+  .location-guide-tooltip {
+    bottom: 90px; /* スマホの現在位置ボタン位置に合わせ */
+    right: 15px;
+    max-width: 260px;
+  }
+  
+  .location-tooltip-content {
+    padding: 14px;
+    gap: 10px;
+  }
+  
+  .location-tooltip-character img {
+    width: 40px;
+  }
+  
+  .location-tooltip-message h3 {
+    font-size: 15px;
+  }
+  
+  .location-tooltip-message p {
+    font-size: 13px;
+  }
+  
+  .location-sub-message {
+    font-size: 12px !important;
+  }
+  
+  .location-tooltip-arrow {
+    right: 35px; /* スマホサイズのボタン中心に合わせ */
+  }
+}

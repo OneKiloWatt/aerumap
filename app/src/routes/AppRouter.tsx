@@ -1,5 +1,6 @@
 // src/routes/AppRouter.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ScrollToTop from "../components/ScrollToTop";
 import TopPage from "../pages/TopPage";
 import RoomPage from "../pages/RoomPage";
 import NoLocationPage from "../pages/NoLocationPage";
@@ -17,6 +18,9 @@ export default function AppRouter() {
 
   return (
     <Router basename={basename}>
+      {/* ページ遷移時に自動で上部にスクロール */}
+      <ScrollToTop />
+
       <Routes>
         <Route path="/" element={<TopPage />} />
         <Route path="/room/:roomId" element={<RoomPage />} />
