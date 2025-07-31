@@ -22,7 +22,8 @@ async function checkJoinRateLimit(ip: string, success: boolean): Promise<boolean
         consecutiveFailures: success ? 0 : 1,
         lastFailure: success ? null : now,
         totalAttempts: 1,
-        lastReset: now
+        lastReset: now,
+	expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000)
       });
       return true;
     }
@@ -36,7 +37,8 @@ async function checkJoinRateLimit(ip: string, success: boolean): Promise<boolean
       await rateLimitRef.update({
         consecutiveFailures: 0,
         lastFailure: null,
-        totalAttempts: (data.totalAttempts || 0) + 1
+        totalAttempts: (data.totalAttempts || 0) + 1,
+	expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000)
       });
       return true;
     }
@@ -49,7 +51,8 @@ async function checkJoinRateLimit(ip: string, success: boolean): Promise<boolean
         await rateLimitRef.update({
           consecutiveFailures: 1,
           lastFailure: now,
-          totalAttempts: (data.totalAttempts || 0) + 1
+          totalAttempts: (data.totalAttempts || 0) + 1,
+	  expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000)
         });
         return true;
       } else {
@@ -62,7 +65,8 @@ async function checkJoinRateLimit(ip: string, success: boolean): Promise<boolean
     await rateLimitRef.update({
       consecutiveFailures: consecutiveFailures + 1,
       lastFailure: now,
-      totalAttempts: (data.totalAttempts || 0) + 1
+      totalAttempts: (data.totalAttempts || 0) + 1,
+      expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000)
     });
 
     return true;
