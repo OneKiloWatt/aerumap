@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import RoomJoinForm from '../components/RoomJoinForm';
 import MapView from '../components/MapView';
 import RoomCreatorWelcome from '../components/RoomCreatorWelcome';
+import LocationButtonGuide from '../components/LocationButtonGuide';
 import Header from '../components/Header';
 import LoadingComponent from '../components/LoadingComponent';
 import { checkRoom } from '../api/checkRoom';
@@ -12,7 +13,9 @@ import { useNavigate } from 'react-router-dom';
 export default function RoomPage() {
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showCreatorWelcome, setShowCreatorWelcome] = useState(false);
+  const [showLocationGuide, setShowLocationGuide] = useState(false);
   const [shouldShowWelcome, setShouldShowWelcome] = useState(false);
+  const [shouldShowLocationGuide, setShouldShowLocationGuide] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [roomId, setRoomId] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -137,24 +140,28 @@ export default function RoomPage() {
           // 作成者かつメンバー：地図画面 + welcome表示
           console.log('🎯 作成者（既にメンバー）: 地図画面 + welcome');
           setShouldShowWelcome(true);
+          setShouldShowLocationGuide(false);
           setShowJoinForm(false);
         } else {
           // 作成者だがまだメンバーでない：参加フォーム → 地図画面 + welcome
           console.log('🎯 作成者（未メンバー）: 参加フォーム → welcome');
           setShowJoinForm(true);
           setShouldShowWelcome(true); // 参加後にwelcomeを表示
+          setShouldShowLocationGuide(false);
         }
       } else {
         if (isMember) {
-          // 既存メンバーの場合：直接地図画面へ
+          // 既存メンバーの場合：直接地図画面へ（ガイドなし）
           console.log('✅ 既存メンバーとして地図画面へ: showJoinForm=false');
           setShowJoinForm(false);
           setShouldShowWelcome(false);
+          setShouldShowLocationGuide(false);
         } else {
-          // 新規参加者：ニックネーム入力
-          console.log('❓ 新規参加者としてニックネーム入力へ: showJoinForm=true');
+          // 新規参加者：ニックネーム入力 → 地図画面 + 現在位置ボタンガイド
+          console.log('👋 新規参加者としてニックネーム入力へ: showJoinForm=true');
           setShowJoinForm(true);
           setShouldShowWelcome(false);
+          setShouldShowLocationGuide(true); // 参加後に現在位置ボタンガイドを表示
         }
       }
       
@@ -177,15 +184,18 @@ export default function RoomPage() {
   }, []);
 
   const handleMapReady = useCallback(() => {
-    // 地図読み込み完了後、welcome表示フラグがtrueならwelcomeを表示
+    // 地図読み込み完了後、適切なガイドを表示
     if (shouldShowWelcome) {
-      logger.debug('地図読み込み完了、welcome表示');
+      logger.debug('地図読み込み完了、作成者welcome表示');
       setShowCreatorWelcome(true);
+    } else if (shouldShowLocationGuide) {
+      logger.debug('地図読み込み完了、現在位置ボタンガイド表示');
+      setShowLocationGuide(true);
     }
-  }, [shouldShowWelcome]);
+  }, [shouldShowWelcome, shouldShowLocationGuide]);
 
   const handleCreatorWelcomeComplete = useCallback(() => {
-    // 吹き出しを閉じる
+    // 作成者ウェルカム吹き出しを閉じる
     logger.debug('作成者ウェルカム完了');
     setShowCreatorWelcome(false);
     setShouldShowWelcome(false);
@@ -194,6 +204,13 @@ export default function RoomPage() {
     const url = new URL(window.location.href);
     url.searchParams.delete('creator');
     window.history.replaceState({}, '', url.toString());
+  }, []);
+
+  const handleLocationGuideComplete = useCallback(() => {
+    // 現在位置ボタンガイドを閉じる
+    logger.debug('現在位置ボタンガイド完了');
+    setShowLocationGuide(false);
+    setShouldShowLocationGuide(false);
   }, []);
 
   const handleShareClick = useCallback(() => {
@@ -225,7 +242,9 @@ export default function RoomPage() {
   logger.debug('RoomPage レンダリング状態', {
     showJoinForm,
     showCreatorWelcome,
+    showLocationGuide,
     shouldShowWelcome,
+    shouldShowLocationGuide,
     isLoading,
     hasError: !!error
   });
@@ -262,6 +281,11 @@ export default function RoomPage() {
           {showCreatorWelcome && (
             <RoomCreatorWelcome 
               onComplete={handleCreatorWelcomeComplete}
+            />
+          )}
+          {showLocationGuide && (
+            <LocationButtonGuide 
+              onComplete={handleLocationGuideComplete}
             />
           )}
         </>
