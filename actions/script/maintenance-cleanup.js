@@ -5,7 +5,7 @@ const key = JSON.parse(
 );
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(key)
 });
 
 const db = admin.firestore();
