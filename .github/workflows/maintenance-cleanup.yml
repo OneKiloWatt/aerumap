@@ -25,6 +25,6 @@ jobs:
       - name: Run cleanup script
         working-directory: actions
         env:
-          GCP_SERVICEACCOUNT_KEY: ${{ secrets.GCP_SERVICEACCOUNT_KEY }}
+          GCP_SERVICEACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
         run: node script/maintenance-cleanup.js
