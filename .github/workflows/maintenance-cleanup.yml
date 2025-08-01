@@ -25,5 +25,5 @@ jobs:
       - name: Run cleanup script
         working-directory: actions
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICEACCOUNT_KEY }}
+          GCP_SERVICEACCOUNT_KEY: ${{ secrets.GCP_SERVICEACCOUNT_KEY }}
         run: node script/maintenance-cleanup.js
