@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
 
-// 環境変数からサービスアカウント情報を取得して初期化
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
@@ -9,38 +8,25 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// 削除対象の定義
-const accessLogThreshold = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30日前
-const rateLimitThreshold = new Date(Date.now() - 3 * 60 * 60 * 1000);       // 3時間前
+(async () => {
+  const now = new Date();
 
-async function deleteOldDocuments(collectionName, threshold) {
-  const snapshot = await db.collection(collectionName)
-    .where('expiresAt', '<=', threshold)
+  // accessLogs の削除（30日経過したもの）
+  const accessLogs = await db.collection('accessLogs')
+    .where('expiresAt', '<=', now)
     .get();
 
-  console.log(`${collectionName}: Found ${snapshot.size} documents to delete.`);
+  const batch = db.batch();
+  accessLogs.forEach(doc => batch.delete(doc.ref));
 
-  const batchSize = 500;
-  let deleted = 0;
+  // rateLimits の削除（3時間以上経過したもの）
+  const rateLimits = await db.collection('rateLimits')
+    .where('expiresAt', '<=', now)
+    .get();
 
-  for (let i = 0; i < snapshot.docs.length; i += batchSize) {
-    const batch = db.batch();
-    const chunk = snapshot.docs.slice(i, i + batchSize);
-    chunk.forEach(doc => batch.delete(doc.ref));
-    await batch.commit();
-    deleted += chunk.length;
-    console.log(`Deleted ${chunk.length} from ${collectionName} (total ${deleted})`);
-  }
-}
+  rateLimits.forEach(doc => batch.delete(doc.ref));
 
-(async () => {
-  try {
-    await deleteOldDocuments('accessLogs', accessLogThreshold);
-    await deleteOldDocuments('rateLimits', rateLimitThreshold);
-    console.log('Cleanup completed successfully.');
-    process.exit(0);
-  } catch (error) {
-    console.error('Cleanup failed:', error);
-    process.exit(1);
-  }
+  await batch.commit();
+
+  console.log(`[Cleanup] Deleted ${accessLogs.size} accessLogs and ${rateLimits.size} rateLimits at ${now.toISOString()}`);
 })();
