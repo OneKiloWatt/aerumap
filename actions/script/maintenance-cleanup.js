@@ -1,7 +1,7 @@
 const admin = require('firebase-admin');
 
 const key = JSON.parse(
-  Buffer.from(process.env.GCP_SERVICE_ACCOUNT_KEY, 'base64').toString('utf-8')
+  Buffer.from(process.env.GCP_SERVICEACCOUNT_KEY, 'base64').toString('utf-8')
 );
 
 admin.initializeApp({
