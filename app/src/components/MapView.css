@@ -83,7 +83,8 @@
   margin-bottom: 12px;
 }
 
-.edit-message-btn {
+/* ポップアップ内の「ひとこと編集」ボタン */
+.popup-content-leaflet .edit-message-btn {
   background: linear-gradient(45deg, #8FBC8F, #6B8E6B);
   color: white;
   border: none;
@@ -95,7 +96,7 @@
   width: 100%;
 }
 
-.edit-message-btn:hover {
+.popup-content-leaflet .edit-message-btn:hover {
   background: linear-gradient(45deg, #7AA07A, #5A7E5A);
 }
 
@@ -239,6 +240,23 @@
 }
 
 .edit-nickname-btn:hover {
+  background-color: #f5f2eb;
+}
+
+.edit-message-btn {
+  color: #8B4513;
+}
+
+.edit-message-btn:hover {
+  background-color: #f5f2eb;
+}
+
+/* メニュー内の「ひとこと編集」ボタン専用スタイル */
+.menu-item.edit-message-btn {
+  color: #8B4513;
+}
+
+.menu-item.edit-message-btn:hover {
   background-color: #f5f2eb;
 }
 

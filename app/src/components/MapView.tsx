@@ -477,6 +477,7 @@ export default function MapView(props: MapViewProps = {}) {
     logger.debug('メッセージ編集ボタン押下');
     const currentMessage = myMemberInfo?.message || '';
     setEditingMessage(currentMessage);
+    setShowMenu(false); // メニューから開いた場合はメニューを閉じる
     
     setTimeout(() => {
       setShowMessageModal(true);
@@ -895,6 +896,9 @@ export default function MapView(props: MapViewProps = {}) {
           <div className="menu-dropdown" onClick={e => e.stopPropagation()}>
             <button className="menu-item edit-nickname-btn" onClick={handleEditNickname}>
               ✏️ 名前を変更
+            </button>
+            <button className="menu-item edit-message-btn" onClick={handleEditMessage}>
+              💬 ひとこと編集
             </button>
             <div className="menu-divider"></div>
             <button className="menu-item exit-btn" onClick={handleExitRoom}>
