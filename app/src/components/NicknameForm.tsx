@@ -14,8 +14,15 @@ export default function NicknameForm({ onSubmit, onClose }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = () => {
-    if (!nickname.trim()) {
+    const trimmedNickname = nickname.trim();
+    
+    if (!trimmedNickname) {
       setError('ニックネームを入力してね〜');
+      return;
+    }
+
+    if (trimmedNickname.length > 20) {
+      setError('ニックネームは20文字以下で入力してください');
       return;
     }
 
@@ -86,6 +93,7 @@ export default function NicknameForm({ onSubmit, onClose }: Props) {
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="ニックネームを入れてね"
+            maxLength={20}
             disabled={isSubmitting}
           />
           <button 
@@ -94,6 +102,10 @@ export default function NicknameForm({ onSubmit, onClose }: Props) {
           >
             🎲
           </button>
+        </div>
+        
+        <div className={`nickname-counter ${nickname.length >= 18 ? 'warning' : ''}`}>
+          {nickname.length}/20文字
         </div>
 
         {error && <div className="error-message">{error}</div>}
