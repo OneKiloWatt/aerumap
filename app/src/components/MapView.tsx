@@ -662,12 +662,14 @@ export default function MapView(props: MapViewProps = {}) {
           )}
           
           <div className="location-error-actions">
-            <Link 
-              to="/no-location" 
+            <a 
+              href={`${process.env.PUBLIC_URL || ''}/no-location`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="location-help-btn"
             >
               📖 位置情報の設定方法を見る
-            </Link>
+            </a>
             <button 
               className="location-retry-btn"
               onClick={() => window.location.reload()}
