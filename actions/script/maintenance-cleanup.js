@@ -27,7 +27,6 @@ const db = admin.firestore();
     .get();
 
   rateLimits.forEach(doc => batch.delete(doc.ref));
-
   await batch.commit();
 
   console.log(`[Cleanup] Deleted ${accessLogs.size} accessLogs and ${rateLimits.size} rateLimits at ${now.toISOString()}`);
