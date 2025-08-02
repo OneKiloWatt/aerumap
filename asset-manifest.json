@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/aerumap/static/css/main.a2deca94.css",
-    "main.js": "/aerumap/static/js/main.5376ea63.js",
+    "main.js": "/aerumap/static/js/main.3232967b.js",
     "index.html": "/aerumap/index.html",
     "main.a2deca94.css.map": "/aerumap/static/css/main.a2deca94.css.map",
-    "main.5376ea63.js.map": "/aerumap/static/js/main.5376ea63.js.map"
+    "main.3232967b.js.map": "/aerumap/static/js/main.3232967b.js.map"
   },
   "entrypoints": [
     "static/css/main.a2deca94.css",
-    "static/js/main.5376ea63.js"
+    "static/js/main.3232967b.js"
   ]
 }
