@@ -2,10 +2,11 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Request, Response } from 'express';
 
+// Firestore参照
 const db = admin.firestore();
 
 /**
- * ランダムな roomId を生成（12文字の英数字）
+ * ランダムなroomIdを生成（12文字の英数字）
  */
 function generateRoomId(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -17,7 +18,7 @@ function generateRoomId(): string {
 }
 
 /**
- * レート制限チェック（同一IPから30分に5回まで、TTLは3時間）
+ * レート制限チェック（同一IPから30分に5回まで）
  */
 async function checkRateLimit(ip: string, action: string = 'createRoom'): Promise<boolean> {
   const rateLimitRef = db.collection('rateLimits').doc(`${action}_${ip}`);
@@ -28,6 +29,7 @@ async function checkRateLimit(ip: string, action: string = 'createRoom'): Promis
     const doc = await rateLimitRef.get();
 
     if (!doc.exists) {
+      // 初回アクセス
       await rateLimitRef.set({
         count: 1,
         lastReset: now,
@@ -40,12 +42,14 @@ async function checkRateLimit(ip: string, action: string = 'createRoom'): Promis
     const data = doc.data()!;
     const attempts = data.attempts || [];
 
+    // 30分以内のアクセス回数をカウント（Date型として処理）
     const recentAttempts = attempts.filter((timestamp: any) => {
       if (timestamp?.toDate) return timestamp.toDate() > thirtyMinutesAgo;
       if (timestamp instanceof Date) return timestamp > thirtyMinutesAgo;
       return false;
     });
 
+    // レート制限に引っかかった
     if (recentAttempts.length >= 5) return false;
 
     const updatedAttempts = [...recentAttempts, now];
@@ -59,12 +63,12 @@ async function checkRateLimit(ip: string, action: string = 'createRoom'): Promis
     return true;
   } catch (error) {
     console.error('Rate limit check failed:', error);
-    return false;
+    return false; // エラー時は安全側に倒す
   }
 }
 
 /**
- * アクセスログを記録（TTL 30日）
+ * アクセスログを記録
  */
 async function logAccess(ip: string, uid: string, success: boolean, error?: string): Promise<void> {
   try {
@@ -75,6 +79,7 @@ async function logAccess(ip: string, uid: string, success: boolean, error?: stri
       success,
       error: error || null,
       timestamp: new Date(),
+      // 30日後に自動削除（TTL）
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     });
   } catch (logError) {
@@ -86,13 +91,14 @@ async function logAccess(ip: string, uid: string, success: boolean, error?: stri
  * ルーム作成API
  */
 export const createRoom = functions.https.onRequest(async (req: Request, res: Response) => {
+  // CORS設定
   const allowedOrigins = ['http://localhost:3000', 'https://onekilowatt.github.io'];
   const origin = req.headers.origin || '';
 
   if (allowedOrigins.includes(origin)) {
     res.set('Access-Control-Allow-Origin', origin);
   } else {
-    res.set('Access-Control-Allow-Origin', 'https://onekilowatt.github.io');
+    res.set('Access-Control-Allow-Origin', 'https://onekilowatt.github.io'); // fallback（←念のため）
   }
   res.set('Access-Control-Allow-Methods', 'POST');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -113,6 +119,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
   try {
     console.log('CreateRoom request from IP:', clientIP);
 
+    // レート制限チェック
     const rateLimitPassed = await checkRateLimit(clientIP, 'createRoom');
     if (!rateLimitPassed) {
       await logAccess(clientIP, uid, false, 'RATE_LIMIT_EXCEEDED');
@@ -120,6 +127,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
       return;
     }
 
+    // 認証トークンの検証
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       await logAccess(clientIP, uid, false, 'MISSING_AUTH_TOKEN');
@@ -128,9 +136,15 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
     }
 
     const idToken = authHeader.split('Bearer ')[1];
+    console.log('Verifying token...');
+
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     uid = decodedToken.uid;
+    console.log('Token verified, UID:', uid);
 
+    // リクエストボディの検証 console.log('Nickname:', nickname);
+
+    // ランダムなroomIdを生成（重複チェック付き）
     const { nickname } = req.body;
     if (!nickname || typeof nickname !== 'string' || nickname.trim().length === 0) {
       await logAccess(clientIP, uid, false, 'INVALID_NICKNAME');
@@ -143,6 +157,9 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
       return;
     }
 
+    console.log('Nickname:', nickname);
+
+    // ランダムなroomIdを生成（重複チェック付き）
     let roomId: string;
     let attempts = 0;
     const maxAttempts = 10;
@@ -160,6 +177,9 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
       return;
     }
 
+    console.log('Generated roomId:', roomId);
+
+    // Firestore書き込み処理（トランザクション）
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 3 * 60 * 60 * 1000);
 
@@ -170,13 +190,16 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
         expiresAt: expiresAt
       });
 
+      // rooms/{roomId}/members/{uid} ドキュメント作成（ホスト登録）
       const memberRef = roomRef.collection('members').doc(uid);
       transaction.set(memberRef, {
         joinedAt: now,
         nickname: nickname.trim()
+	// messageは現時点では使用しない
       });
     });
 
+    // 成功ログ記録
     await logAccess(clientIP, uid, true);
 
     res.status(200).json({
@@ -190,4 +213,3 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
