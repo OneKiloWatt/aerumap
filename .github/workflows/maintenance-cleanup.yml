@@ -3,7 +3,9 @@ name: Firebase Maintenance Cleanup
 on:
   push:
     branches:
-      - goto
+      - main
+  schedule:
+    - cron: '*/10 * * * *'  # 10分おきに実行（test）
 
 jobs:
   cleanup:
