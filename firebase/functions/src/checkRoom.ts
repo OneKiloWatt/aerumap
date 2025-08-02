@@ -25,7 +25,7 @@ async function checkRateLimit(ip: string): Promise<boolean> {
   try {
     const doc = await rateLimitRef.get();
     if (!doc.exists) {
-      await rateLimitRef.set({ count: 1, lastReset: now, attempts: [now] });
+      await rateLimitRef.set({ count: 1, lastReset: now, attempts: [now],expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000) });
       return true;
     }
 
@@ -42,6 +42,7 @@ async function checkRateLimit(ip: string): Promise<boolean> {
       count: updatedAttempts.length,
       lastReset: now,
       attempts: updatedAttempts,
+      expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000)
     });
 
     return true;

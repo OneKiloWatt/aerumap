@@ -20,51 +20,44 @@ function generateRoomId(): string {
 /**
  * レート制限チェック（同一IPから30分に5回まで）
  */
-async function checkRateLimit(ip: string): Promise<boolean> {
-  const rateLimitRef = db.collection('rateLimits').doc(`createRoom_${ip}`);
+async function checkRateLimit(ip: string, action: string = 'createRoom'): Promise<boolean> {
+  const rateLimitRef = db.collection('rateLimits').doc(`${action}_${ip}`);
   const now = new Date();
   const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
   try {
     const doc = await rateLimitRef.get();
-    
+
     if (!doc.exists) {
       // 初回アクセス
       await rateLimitRef.set({
         count: 1,
         lastReset: now,
-        attempts: [now]
+        attempts: [now],
+        expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000)
       });
       return true;
     }
 
     const data = doc.data()!;
     const attempts = data.attempts || [];
-    
+
     // 30分以内のアクセス回数をカウント（Date型として処理）
     const recentAttempts = attempts.filter((timestamp: any) => {
-      // FirestoreのTimestampオブジェクトの場合
-      if (timestamp && timestamp.toDate) {
-        return timestamp.toDate() > thirtyMinutesAgo;
-      }
-      // 普通のDateオブジェクトの場合
-      if (timestamp instanceof Date) {
-        return timestamp > thirtyMinutesAgo;
-      }
-      // その他の場合は除外
+      if (timestamp?.toDate) return timestamp.toDate() > thirtyMinutesAgo;
+      if (timestamp instanceof Date) return timestamp > thirtyMinutesAgo;
       return false;
     });
 
-    if (recentAttempts.length >= 5) {
-      return false; // レート制限に引っかかった
-    }
+    // レート制限に引っかかった
+    if (recentAttempts.length >= 5) return false;
 
-    // 新しいアクセスを記録
     const updatedAttempts = [...recentAttempts, now];
     await rateLimitRef.set({
       count: updatedAttempts.length,
       lastReset: now,
-      attempts: updatedAttempts
+      attempts: updatedAttempts,
+      expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000)
     });
 
     return true;
@@ -75,7 +68,7 @@ async function checkRateLimit(ip: string): Promise<boolean> {
 }
 
 /**
- * アクセスログの記録
+ * アクセスログを記録
  */
 async function logAccess(ip: string, uid: string, success: boolean, error?: string): Promise<void> {
   try {
@@ -86,7 +79,7 @@ async function logAccess(ip: string, uid: string, success: boolean, error?: stri
       success,
       error: error || null,
       timestamp: new Date(),
-      // 30日後に自動削除（TTL）
+      // 30日後に自動削除
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     });
   } catch (logError) {
@@ -109,7 +102,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
   }
   res.set('Access-Control-Allow-Methods', 'POST');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
+
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
     return;
@@ -127,7 +120,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
     console.log('CreateRoom request from IP:', clientIP);
 
     // レート制限チェック
-    const rateLimitPassed = await checkRateLimit(clientIP);
+    const rateLimitPassed = await checkRateLimit(clientIP, 'createRoom');
     if (!rateLimitPassed) {
       await logAccess(clientIP, uid, false, 'RATE_LIMIT_EXCEEDED');
       res.status(429).json({ error: 'Too many requests. Please try again later.' });
@@ -144,7 +137,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
 
     const idToken = authHeader.split('Bearer ')[1];
     console.log('Verifying token...');
-    
+
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     uid = decodedToken.uid;
     console.log('Token verified, UID:', uid);
@@ -156,7 +149,6 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
       res.status(400).json({ error: 'Valid nickname is required' });
       return;
     }
-
     if (nickname.length > 50) {
       await logAccess(clientIP, uid, false, 'NICKNAME_TOO_LONG');
       res.status(400).json({ error: 'Nickname is too long' });
@@ -173,9 +165,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
     do {
       roomId = generateRoomId();
       const roomDoc = await db.collection('rooms').doc(roomId).get();
-      if (!roomDoc.exists) {
-        break;
-      }
+      if (!roomDoc.exists) break;
       attempts++;
     } while (attempts < maxAttempts);
 
@@ -190,7 +180,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
     // Firestore書き込み処理（トランザクション）
     await db.runTransaction(async (transaction) => {
       const now = new Date();
-      const expiresAt = new Date(now.getTime() + 3 * 60 * 60 * 1000); // 3時間後
+      const expiresAt = new Date(now.getTime() + 3 * 60 * 60 * 1000);
 
       // rooms/{roomId} ドキュメント作成
       const roomRef = db.collection('rooms').doc(roomId);
@@ -204,7 +194,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
       transaction.set(memberRef, {
         joinedAt: now,
         nickname: nickname.trim()
-        // messageは現時点では使用しない
+	// messageは現時点では使用しない
       });
     });
 
@@ -213,21 +203,13 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
     // 成功ログ記録
     await logAccess(clientIP, uid, true);
 
-    // レスポンス返却
-    const roomUrl = `https://aimap.app/room/${roomId}`;
     res.status(200).json({
       roomId,
-      url: roomUrl
+      url: `/room/${roomId}`
     });
-
   } catch (error) {
     console.error('CreateRoom error:', error);
-    
-    let errorMessage = 'INTERNAL_ERROR';
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-    
+    const errorMessage = error instanceof Error ? error.message : 'INTERNAL_ERROR';
     await logAccess(clientIP, uid, false, errorMessage);
     res.status(500).json({ error: 'Internal server error' });
   }
