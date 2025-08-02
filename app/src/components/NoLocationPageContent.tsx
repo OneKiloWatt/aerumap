@@ -96,6 +96,42 @@ export default function NoLocationPageContent() {
 
         <div className="no-location-content">
           
+          {/* 📍 簡単な方法（最新ブラウザ共通） */}
+          <section className="platform-section quick-method">
+            <div className="platform-header" style={{ background: 'linear-gradient(135deg, #FF6B6B, #FF8E8E)' }}>
+              <h2 className="platform-title">⚡ 一番簡単な方法（最新ブラウザ）</h2>
+            </div>
+            <div className="step-list">
+              <div className="step-item">
+                <div className="step-number">1</div>
+                <div className="step-content">
+                  <h3>📍 位置情報アイコンを探す</h3>
+                  <p><strong>アドレスバーの左側にある📍のようなピンアイコン</strong>をクリック/タップ</p>
+                  <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px', margin: '8px 0', border: '1px solid #e9ecef' }}>
+                    <small style={{ color: '#666' }}>
+                      💡 <strong>Chrome・Edge・Firefox・Safari</strong>で使える方法です！<br/>
+                      位置情報が必要なサイトでは自動的にアイコンが表示されます
+                    </small>
+                  </div>
+                </div>
+              </div>
+              <div className="step-item">
+                <div className="step-number">2</div>
+                <div className="step-content">
+                  <h3>✅ 「許可」を選択</h3>
+                  <p>ポップアップで「このサイトの位置情報を許可する」または「許可」をクリック/タップ</p>
+                </div>
+              </div>
+              <div className="step-item">
+                <div className="step-number">3</div>
+                <div className="step-content">
+                  <h3>🔄 ページを再読み込み</h3>
+                  <p>設定完了後、F5キー（Mac: ⌘+R、スマホ: 更新ボタン）でページを再読み込み</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* iOS Safari */}
           <section className="platform-section ios-safari">
             <div className="platform-header">
@@ -105,36 +141,36 @@ export default function NoLocationPageContent() {
               <div className="step-item">
                 <div className="step-number">1</div>
                 <div className="step-content">
-                  <h3>設定アプリを開く</h3>
-                  <p>ホーム画面から「設定」アプリをタップ</p>
+                  <h3>📍 まず簡単な方法を試す</h3>
+                  <p><strong>アドレスバーの📍アイコン</strong>または<strong>「ぁあ」アイコン</strong>をタップ → 「Webサイトの設定」→「位置情報」→「許可」</p>
                 </div>
               </div>
               <div className="step-item">
                 <div className="step-number">2</div>
+                <div className="step-content">
+                  <h3>設定アプリを開く</h3>
+                  <p>上記で解決しない場合：ホーム画面から「設定」アプリをタップ</p>
+                </div>
+              </div>
+              <div className="step-item">
+                <div className="step-number">3</div>
                 <div className="step-content">
                   <h3>プライバシーとセキュリティ</h3>
                   <p>「プライバシーとセキュリティ」→「位置情報サービス」をタップ</p>
                 </div>
               </div>
               <div className="step-item">
-                <div className="step-number">3</div>
+                <div className="step-number">4</div>
                 <div className="step-content">
                   <h3>位置情報サービスをオン</h3>
                   <p>一番上の「位置情報サービス」がオンになっているか確認</p>
                 </div>
               </div>
               <div className="step-item">
-                <div className="step-number">4</div>
-                <div className="step-content">
-                  <h3>Safariの設定</h3>
-                  <p>「Safari」をタップして「このAppの使用中のみ許可」を選択</p>
-                </div>
-              </div>
-              <div className="step-item">
                 <div className="step-number">5</div>
                 <div className="step-content">
-                  <h3>ページを再読み込み</h3>
-                  <p>設定完了後、ブラウザでページを再読み込みしてください</p>
+                  <h3>SafariのWebサイト</h3>
+                  <p>「SafariのWebサイト」をタップして「このAppの使用中のみ許可」を選択</p>
                 </div>
               </div>
             </div>
@@ -149,29 +185,29 @@ export default function NoLocationPageContent() {
               <div className="step-item">
                 <div className="step-number">1</div>
                 <div className="step-content">
-                  <h3>設定アプリを開く</h3>
-                  <p>ホーム画面から「設定」アプリをタップ</p>
+                  <h3>📍 まず簡単な方法を試す</h3>
+                  <p><strong>アドレスバーの左側にある📍アイコン</strong>をタップ → 「許可」を選択</p>
                 </div>
               </div>
               <div className="step-item">
                 <div className="step-number">2</div>
+                <div className="step-content">
+                  <h3>設定アプリを開く</h3>
+                  <p>上記で解決しない場合：ホーム画面から「設定」アプリをタップ</p>
+                </div>
+              </div>
+              <div className="step-item">
+                <div className="step-number">3</div>
                 <div className="step-content">
                   <h3>Chromeアプリの設定</h3>
                   <p>アプリ一覧から「Chrome」をタップ</p>
                 </div>
               </div>
               <div className="step-item">
-                <div className="step-number">3</div>
+                <div className="step-number">4</div>
                 <div className="step-content">
                   <h3>位置情報を許可</h3>
                   <p>「位置情報」をタップして「このAppの使用中のみ許可」を選択</p>
-                </div>
-              </div>
-              <div className="step-item">
-                <div className="step-number">4</div>
-                <div className="step-content">
-                  <h3>Chromeブラウザでも許可</h3>
-                  <p>ページにアクセスした時に位置情報の許可を求められたら「許可」をタップ</p>
                 </div>
               </div>
             </div>
@@ -186,65 +222,127 @@ export default function NoLocationPageContent() {
               <div className="step-item">
                 <div className="step-number">1</div>
                 <div className="step-content">
-                  <h3>設定アプリを開く</h3>
-                  <p>ホーム画面から「設定」アプリをタップ</p>
+                  <h3>📍 まず簡単な方法を試す</h3>
+                  <p><strong>アドレスバーの左側にある📍アイコン</strong>をタップ → 「許可」を選択</p>
                 </div>
               </div>
               <div className="step-item">
                 <div className="step-number">2</div>
                 <div className="step-content">
-                  <h3>位置情報をオン</h3>
-                  <p>「位置情報」または「ロケーション」をタップしてオンにする</p>
+                  <h3>Android端末の設定</h3>
+                  <p>上記で解決しない場合：「設定」アプリ → 「位置情報」または「ロケーション」をオンにする</p>
                 </div>
               </div>
               <div className="step-item">
                 <div className="step-number">3</div>
                 <div className="step-content">
-                  <h3>アプリの権限</h3>
-                  <p>「アプリの権限」→「Chrome」→「位置情報」で「許可」を選択</p>
-                </div>
-              </div>
-              <div className="step-item">
-                <div className="step-number">4</div>
-                <div className="step-content">
-                  <h3>ブラウザでも許可</h3>
-                  <p>ページで位置情報の許可を求められたら「許可」をタップ</p>
+                  <h3>Chromeアプリの権限</h3>
+                  <p>「設定」→「アプリ」→「Chrome」→「権限」→「位置情報」で「許可」を選択</p>
+                  <div style={{ background: '#e3f2fd', padding: '10px', borderRadius: '6px', margin: '8px 0', fontSize: '14px' }}>
+                    <strong>💡 Android 12以降：</strong>「正確な位置情報を使用」もオンにしてください
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* PC Chrome */}
-          <section className="platform-section pc-chrome">
+          {/* Android Firefox */}
+          <section className="platform-section android-firefox">
             <div className="platform-header">
-              <h2 className="platform-title">💻 パソコン（Chrome）</h2>
+              <h2 className="platform-title">🤖 Android（Firefox）</h2>
             </div>
             <div className="step-list">
               <div className="step-item">
                 <div className="step-number">1</div>
                 <div className="step-content">
-                  <h3>アドレスバーの設定</h3>
-                  <p>アドレスバーの左側にある🔒マークまたは🌐マークをクリック</p>
+                  <h3>📍 まず簡単な方法を試す</h3>
+                  <p><strong>アドレスバーの左側にある位置情報アイコン</strong>をタップ → 「許可」を選択</p>
                 </div>
               </div>
               <div className="step-item">
                 <div className="step-number">2</div>
                 <div className="step-content">
-                  <h3>位置情報を許可</h3>
-                  <p>「位置情報」の項目を「許可」に変更</p>
+                  <h3>Firefoxの設定</h3>
+                  <p>Firefoxアプリ → 右上の「⋮」→「設定」→「サイトの権限」→「位置情報」で許可</p>
                 </div>
               </div>
               <div className="step-item">
                 <div className="step-number">3</div>
                 <div className="step-content">
-                  <h3>ページを再読み込み</h3>
-                  <p>設定変更後、F5キーまたは⌘+Rでページを再読み込み</p>
+                  <h3>Android端末の設定</h3>
+                  <p>「設定」→「アプリ」→「Firefox」→「権限」→「位置情報」で「許可」を選択</p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* PC Safari */}
+          {/* PC Chrome/Edge */}
+          <section className="platform-section pc-chrome">
+            <div className="platform-header">
+              <h2 className="platform-title">💻 パソコン（Chrome・Edge）</h2>
+            </div>
+            <div className="step-list">
+              <div className="step-item">
+                <div className="step-number">1</div>
+                <div className="step-content">
+                  <h3>📍 位置情報アイコンをクリック</h3>
+                  <p><strong>アドレスバーの左側にある📍のようなピンアイコン</strong>をクリック</p>
+                  <div style={{ background: '#e3f2fd', padding: '12px', borderRadius: '8px', margin: '8px 0', border: '1px solid #bbdefb' }}>
+                    <small style={{ color: '#0d47a1' }}>
+                      💡 <strong>これが一番簡単！</strong><br/>
+                      🔒マークや🌐マークのあたりに位置情報アイコンが表示されます
+                    </small>
+                  </div>
+                </div>
+              </div>
+              <div className="step-item">
+                <div className="step-number">2</div>
+                <div className="step-content">
+                  <h3>✅ 「許可」を選択</h3>
+                  <p>ドロップダウンメニューで「許可」を選択</p>
+                </div>
+              </div>
+              <div className="step-item">
+                <div className="step-number">3</div>
+                <div className="step-content">
+                  <h3>🔄 ページを再読み込み</h3>
+                  <p>設定変更後、F5キー（Mac: ⌘+R）でページを再読み込み</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* PC Firefox */}
+          <section className="platform-section pc-firefox">
+            <div className="platform-header">
+              <h2 className="platform-title">💻 パソコン（Firefox）</h2>
+            </div>
+            <div className="step-list">
+              <div className="step-item">
+                <div className="step-number">1</div>
+                <div className="step-content">
+                  <h3>📍 位置情報アイコンをクリック</h3>
+                  <p><strong>アドレスバーの左側にある位置情報アイコン</strong>をクリック → 「許可」を選択</p>
+                </div>
+              </div>
+              <div className="step-item">
+                <div className="step-number">2</div>
+                <div className="step-content">
+                  <h3>Firefox設定から変更</h3>
+                  <p>右上の「≡」→「設定」→「プライバシーとセキュリティ」→「許可設定」→「位置情報」→「設定」</p>
+                </div>
+              </div>
+              <div className="step-item">
+                <div className="step-number">3</div>
+                <div className="step-content">
+                  <h3>位置情報を許可</h3>
+                  <p>「位置情報へのアクセスの要求をブロックする」のチェックを外すか、個別サイトで「許可」を設定</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Mac Safari */}
           <section className="platform-section pc-safari">
             <div className="platform-header">
               <h2 className="platform-title">💻 Mac（Safari）</h2>
@@ -253,22 +351,25 @@ export default function NoLocationPageContent() {
               <div className="step-item">
                 <div className="step-number">1</div>
                 <div className="step-content">
-                  <h3>Safariの設定</h3>
-                  <p>メニューバーから「Safari」→「設定」をクリック</p>
+                  <h3>📍 アドレスバーのアイコン確認</h3>
+                  <p>アドレスバーの左側に位置情報のアイコンがあればクリック → 「許可」を選択</p>
                 </div>
               </div>
               <div className="step-item">
                 <div className="step-number">2</div>
                 <div className="step-content">
-                  <h3>Webサイトタブ</h3>
-                  <p>「Webサイト」タブを選択</p>
+                  <h3>Mac システム設定</h3>
+                  <p>Appleメニュー → 「システム設定」→「プライバシーとセキュリティ」→「位置情報サービス」をオン</p>
+                  <div style={{ background: '#fff3e0', padding: '10px', borderRadius: '6px', margin: '8px 0', fontSize: '14px' }}>
+                    <strong>⚠️ 注意：</strong>古いmacOSでは「システム環境設定」→「セキュリティとプライバシー」
+                  </div>
                 </div>
               </div>
               <div className="step-item">
                 <div className="step-number">3</div>
                 <div className="step-content">
-                  <h3>位置情報サービス</h3>
-                  <p>左側から「位置情報サービス」を選択</p>
+                  <h3>Safariの設定</h3>
+                  <p>Safari → 「設定」→「Webサイト」→「位置情報サービス」</p>
                 </div>
               </div>
               <div className="step-item">
@@ -287,6 +388,13 @@ export default function NoLocationPageContent() {
               <h2 className="troubleshooting-title">🔧 うまくいかない時は</h2>
             </div>
             <div className="troubleshooting-list">
+              <div className="troubleshooting-item">
+                <div className="troubleshooting-icon">📍</div>
+                <div className="troubleshooting-content">
+                  <h3>📍アイコンが見つからない</h3>
+                  <p>ページを再読み込みするか、別のタブで開き直してみてください。位置情報が必要なサイトでは通常自動で表示されます</p>
+                </div>
+              </div>
               <div className="troubleshooting-item">
                 <div className="troubleshooting-icon">🔄</div>
                 <div className="troubleshooting-content">
