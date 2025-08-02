@@ -142,9 +142,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
     uid = decodedToken.uid;
     console.log('Token verified, UID:', uid);
 
-    // リクエストボディの検証 console.log('Nickname:', nickname);
-
-    // ランダムなroomIdを生成（重複チェック付き）
+    // リクエストボディの検証
     const { nickname } = req.body;
     if (!nickname || typeof nickname !== 'string' || nickname.trim().length === 0) {
       await logAccess(clientIP, uid, false, 'INVALID_NICKNAME');
@@ -180,10 +178,11 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
     console.log('Generated roomId:', roomId);
 
     // Firestore書き込み処理（トランザクション）
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-
     await db.runTransaction(async (transaction) => {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+
+      // rooms/{roomId} ドキュメント作成
       const roomRef = db.collection('rooms').doc(roomId);
       transaction.set(roomRef, {
         createdAt: now,
@@ -198,6 +197,8 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
 	// messageは現時点では使用しない
       });
     });
+
+    console.log('Firestore write successful');
 
     // 成功ログ記録
     await logAccess(clientIP, uid, true);
