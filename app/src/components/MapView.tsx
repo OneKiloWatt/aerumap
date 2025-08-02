@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Share2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import L from 'leaflet';
 import './MapView.css';
 import { useGeolocation } from '../hooks/useGeolocation';
@@ -662,12 +662,12 @@ export default function MapView(props: MapViewProps = {}) {
           )}
           
           <div className="location-error-actions">
-            <a 
-              href="/no-location" 
+            <Link 
+              to="/no-location" 
               className="location-help-btn"
             >
               📖 位置情報の設定方法を見る
-            </a>
+            </Link>
             <button 
               className="location-retry-btn"
               onClick={() => window.location.reload()}
