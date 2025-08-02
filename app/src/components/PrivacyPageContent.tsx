@@ -265,15 +265,16 @@ export default function PrivacyPageContent() {
               プライバシーに関するご質問・ご意見は、以下よりお願いいたします：
             </p>
             <a 
-              href="https://github.com/OneKiloWatt/aerumap"
+              href="https://forms.gle/Q1afr7URr3kURVDs6"
               target="_blank"
               rel="noopener noreferrer"
               className="privacy-contact-link"
             >
-              GitHubリポジトリ（Issues機能）
+              お問い合わせフォーム
             </a>
             <p className="privacy-contact-note">
-              ※メール等でのお問い合わせには現在対応しておりません。ご了承ください。
+              ※個人開発のため、お問い合わせへの個別返信は<br />
+              難しい場合がございます。ご了承ください。
             </p>
           </section>
         </div>

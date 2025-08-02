@@ -15,6 +15,9 @@ export default function TermsPageContent() {
             本規約は、あえるまっぷ（以下「本サービス」）の利用に関する条件を定めるものです。<br />
             利用者は本サービスを利用することで、本規約に同意したものとみなされます。
           </p>
+          <p className="terms-updated">
+            最終更新日：2025年7月28日
+          </p>
         </div>
 
         {/* 各条項 */}
@@ -167,16 +170,20 @@ export default function TermsPageContent() {
               📧 お問い合わせ
             </h2>
             <p>
-              サービスに関するお問い合わせは、以下のGitHubリポジトリよりお願いいたします：
+              バグ報告や改善提案は、以下のフォームよりお願いいたします：
             </p>
             <a 
-              href="https://github.com/OneKiloWatt/aerumap"
+              href="https://forms.gle/Q1afr7URr3kURVDs6"
               target="_blank"
               rel="noopener noreferrer"
               className="terms-contact-link"
             >
-              https://github.com/OneKiloWatt/aerumap
+              お問い合わせフォーム
             </a>
+            <p className="terms-contact-note">
+              ※個人開発のため、お問い合わせへの個別返信は<br />
+              難しい場合がございます。ご了承ください。
+            </p>
           </section>
         </div>
       </div>
