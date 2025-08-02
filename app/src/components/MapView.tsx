@@ -121,7 +121,9 @@ export default function MapView(props: MapViewProps = {}) {
     loading, 
     error, 
     startGeolocation, 
-    retryGeolocation 
+    startGeolocationDelayed, // 🆕 遅延開始関数
+    retryGeolocation,
+    forceRetryGeolocation // 🆕 強制再取得関数
   } = useGeolocation(geolocationOptions);
 
   // 🆕 初期位置情報の処理
@@ -137,10 +139,10 @@ export default function MapView(props: MapViewProps = {}) {
       setFinalLoading(false);
       setFinalError(null);
       
-      // 位置情報監視を開始（更新のため）
+      // 🔧 重複ダイアログ防止：位置情報監視を2秒遅延で開始
       if (roomId) {
-        console.log('📍 位置情報監視を開始');
-        startGeolocation();
+        console.log('⏰ 重複ダイアログ防止：位置情報監視を遅延で開始');
+        startGeolocationDelayed(); // デフォルト遅延を使用（2秒）
       }
     } else if (position) {
       // useGeolocationから位置情報を取得
@@ -153,7 +155,7 @@ export default function MapView(props: MapViewProps = {}) {
       setFinalLoading(loading);
       setFinalError(error);
     }
-  }, [initialPosition, position, loading, error, roomId, startGeolocation]);
+  }, [initialPosition, position, loading, error, roomId, startGeolocationDelayed]);
 
   // 位置情報共有フック
   const { 
@@ -658,7 +660,7 @@ export default function MapView(props: MapViewProps = {}) {
   // 🔧 位置情報再取得ハンドラー（Safari対応）
   const handleLocationRetry = () => {
     logger.debug('位置情報再取得ボタン押下');
-    retryGeolocation();
+    forceRetryGeolocation(); // 🔧 強制再取得を使用（制限を無視）
   };
 
   // 位置情報エラーと読み込み状態の判定
