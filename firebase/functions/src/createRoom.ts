@@ -79,7 +79,7 @@ async function logAccess(ip: string, uid: string, success: boolean, error?: stri
       success,
       error: error || null,
       timestamp: new Date(),
-      // 30日後に自動削除（TTL）
+      // 30日後に自動削除
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     });
   } catch (logError) {
@@ -205,7 +205,7 @@ export const createRoom = functions.https.onRequest(async (req: Request, res: Re
 
     res.status(200).json({
       roomId,
-      url: `https://aimap.app/room/${roomId}`
+      url: `/room/${roomId}`
     });
   } catch (error) {
     console.error('CreateRoom error:', error);
