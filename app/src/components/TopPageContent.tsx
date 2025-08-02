@@ -21,7 +21,8 @@ export default function TopPageContent() {
     setShowModal(false);
   };
 
-  const handleNicknameSubmit = async (nickname: string) => {
+  // 🔧 位置情報も受け取るように修正
+  const handleNicknameSubmit = async (nickname: string, position?: [number, number]) => {
     try {
       const user = getAuth().currentUser;
       if (!user) throw new Error('未ログイン状態です');
@@ -30,7 +31,16 @@ export default function TopPageContent() {
       const roomId = await createRoom(nickname, idToken);
   
       setShowModal(false);
-      navigate(`/room/${roomId}?creator=true`);
+      
+      // 🔧 位置情報がある場合はクエリパラメータで渡す
+      let url = `/room/${roomId}?creator=true`;
+      if (position) {
+        const [lat, lng] = position;
+        url += `&lat=${lat}&lng=${lng}`;
+        console.log('📍 位置情報をMapViewに渡します', { lat, lng });
+      }
+      
+      navigate(url);
     } catch (err) {
       console.error('ルーム作成エラー:', err);
       alert('ルーム作成に失敗しました😭');

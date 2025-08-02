@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import './RoomJoinForm.css';
 import { nicknameList } from '../constants/nicknameList';
 import { joinRoom } from '../api/joinRoom';
+import { logger } from '../utils/logger';
 
 type Props = {
   roomId: string;
-  onSubmit: (nickname: string) => void;
+  onSubmit: (nickname: string, position?: [number, number]) => void;
   onError?: (error: string) => void;
 };
 
@@ -15,6 +16,7 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
   const [nickname, setNickname] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // レンダリング確認用（デバッグ）
   console.log('📝 RoomJoinForm レンダリング実行中', {
@@ -39,27 +41,69 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
     }
 
     setError(''); // エラーをクリア
+    setIsSubmitting(true);
     
     try {
-      // joinRoom API を呼び出し
+      // 1. joinRoom API を呼び出し
+      console.log('ルーム参加API実行開始', { roomId, nickname });
       const result = await joinRoom(roomId, nickname);
       
-      if (result.success) {
-        console.log('ルーム参加成功:', result);
-        onSubmit(nickname); // 成功時は親に通知
-      } else {
+      if (!result.success) {
         console.error('ルーム参加失敗:', result.error);
         setError(result.error);
+        setIsSubmitting(false);
         
         // 親コンポーネントにもエラーを通知（オプション）
         if (onError) {
           onError(result.error);
         }
+        return;
       }
+
+      console.log('ルーム参加成功、位置情報取得開始');
+
+      // 2. 位置情報取得を試行（Safari対応のため明示的なユーザーアクション直後）
+      if (!navigator.geolocation) {
+        console.warn('Geolocation not supported, proceeding to map view');
+        onSubmit(nickname); // 位置情報非対応でも地図画面へ（エラー画面が表示される）
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // 位置情報取得成功
+          console.log('位置情報取得成功', {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          });
+          
+          // 成功時は位置情報と一緒に親に通知
+          const coordinates: [number, number] = [position.coords.latitude, position.coords.longitude];
+          onSubmit(nickname, coordinates);
+        },
+        (locationError) => {
+          // 位置情報取得失敗
+          console.warn('位置情報取得失敗、エラー画面表示へ', {
+            code: locationError.code,
+            message: locationError.message
+          });
+          
+          // 失敗時は位置情報なしで地図画面へ
+          onSubmit(nickname);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 5000
+        }
+      );
+
     } catch (error) {
       console.error('ルーム参加処理中エラー:', error);
       const errorMessage = '参加処理中にエラーが発生しました';
       setError(errorMessage);
+      setIsSubmitting(false);
       
       if (onError) {
         onError(errorMessage);
@@ -97,8 +141,14 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="ニックネームを入れてね"
+                disabled={isSubmitting}
               />
-              <button onClick={handleRandomGenerate}>🎲</button>
+              <button 
+                onClick={handleRandomGenerate}
+                disabled={isSubmitting}
+              >
+                🎲
+              </button>
             </div>
             
             <p className="privacy-notice">
@@ -108,7 +158,12 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
             {error && <div className="error-message">{error}</div>}
 
             <div className="button-row">
-              <button onClick={handleNext}>次へ</button>
+              <button 
+                onClick={handleNext}
+                disabled={isSubmitting}
+              >
+                次へ
+              </button>
             </div>
           </>
         ) : (
@@ -133,6 +188,7 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
+                  disabled={isSubmitting}
                 />
                 上記に同意する
               </label>
@@ -143,10 +199,10 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
             <div className="button-row">
               <button 
                 onClick={handleSubmit}
-                disabled={!agreed}
-                className={!agreed ? 'disabled' : ''}
+                disabled={!agreed || isSubmitting}
+                className={(!agreed || isSubmitting) ? 'disabled' : ''}
               >
-                参加する
+                {isSubmitting ? '参加中...' : '参加する'}
               </button>
             </div>
           </>

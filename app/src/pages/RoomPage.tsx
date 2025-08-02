@@ -19,6 +19,7 @@ export default function RoomPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [roomId, setRoomId] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [initialPosition, setInitialPosition] = useState<[number, number] | null>(null); // 🆕 位置情報保存
   const navigate = useNavigate();
   
   // useEffect実行回数カウント（デバッグ用）
@@ -77,6 +78,15 @@ export default function RoomPage() {
     
     const searchParams = new URLSearchParams(window.location.search);
     const isCreator = searchParams.get('creator') === 'true';
+    
+    // 🆕 URLから位置情報を取得
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    if (lat && lng) {
+      const position: [number, number] = [parseFloat(lat), parseFloat(lng)];
+      setInitialPosition(position);
+      console.log('📍 URLから位置情報を取得:', position);
+    }
     
     // URLからroomIdを取得（/room/:roomId形式）
     const pathSegments = window.location.pathname.split('/');
@@ -173,8 +183,16 @@ export default function RoomPage() {
     });
   }, [navigate]);
   
-  const handleJoinSubmit = useCallback((nickname: string) => {
+  // 🔧 位置情報も受け取るように修正
+  const handleJoinSubmit = useCallback((nickname: string, position?: [number, number]) => {
     logger.success(`ルームに参加: ${nickname}`);
+    
+    // 🆕 位置情報が渡されたら保存
+    if (position) {
+      setInitialPosition(position);
+      console.log('📍 参加フォームから位置情報を受信:', position);
+    }
+    
     setShowJoinForm(false);
   }, []);
 
@@ -203,6 +221,8 @@ export default function RoomPage() {
     // URLからcreatorパラメータを削除
     const url = new URL(window.location.href);
     url.searchParams.delete('creator');
+    url.searchParams.delete('lat'); // 🆕 位置情報パラメータも削除
+    url.searchParams.delete('lng');
     window.history.replaceState({}, '', url.toString());
   }, []);
 
@@ -246,7 +266,8 @@ export default function RoomPage() {
     shouldShowWelcome,
     shouldShowLocationGuide,
     isLoading,
-    hasError: !!error
+    hasError: !!error,
+    hasInitialPosition: !!initialPosition
   });
 
   return (
@@ -277,6 +298,7 @@ export default function RoomPage() {
             roomId={roomId}
             onShareClick={handleShareClick}
             onMapReady={handleMapReady}
+            initialPosition={initialPosition} // 🆕 位置情報をMapViewに渡す
           />
           {showCreatorWelcome && (
             <RoomCreatorWelcome 
