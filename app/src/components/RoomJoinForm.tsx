@@ -141,6 +141,7 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="ニックネームを入れてね"
+                maxLength={20}
                 disabled={isSubmitting}
               />
               <button 
@@ -149,6 +150,10 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
               >
                 🎲
               </button>
+            </div>
+            
+            <div className={`nickname-counter ${nickname.length >= 18 ? 'warning' : ''}`}>
+              {nickname.length}/20文字
             </div>
             
             <p className="privacy-notice">
