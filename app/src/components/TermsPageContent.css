@@ -40,6 +40,13 @@
   line-height: 1.6;
 }
 
+.terms-updated {
+  font-size: 14px;
+  color: #888888;
+  margin-top: 8px;
+  font-style: italic;
+}
+
 /* コンテンツ全体 */
 .terms-content {
   font-size: 16px;
@@ -137,6 +144,12 @@
 
 .terms-contact-link:hover {
   color: #E8F5E8;
+}
+
+.terms-contact-note {
+  font-size: 14px;
+  color: #E8F5E8;
+  margin-top: 8px;
 }
 
 /* レスポンシブ対応 */
