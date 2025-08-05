@@ -7,6 +7,9 @@
     <meta name="theme-color" content="#8FBC8F" />
     <meta name="robots" content="index, follow" />
 
+    <!-- 🔥 Googlebot最優先：HTMLリダイレクト -->
+    <meta http-equiv="refresh" content="0; url=https://onekilowatt.github.io/aerumap/?/privacy" />
+
     <title>プライバシーポリシー | あえるまっぷ</title>
 
     <meta
@@ -17,19 +20,20 @@
       name="keywords"
       content="あえるまっぷ, プライバシーポリシー, 個人情報保護, 位置情報, データ保護, セキュリティ"
     />
-    <link rel="canonical" href="https://onekilowatt.github.io/aerumap/privacy" />
+    
+    <!-- 🔥 正規URLをリダイレクト先に変更 -->
+    <link rel="canonical" href="https://onekilowatt.github.io/aerumap/?/privacy" />
 
     <!-- OGP（SNS対応） -->
     <meta property="og:title" content="プライバシーポリシー - あえるまっぷ" />
     <meta property="og:description" content="あえるまっぷのプライバシーポリシー。位置情報や個人情報の収集・利用・保護について詳しく説明。" />
     <meta property="og:image" content="https://onekilowatt.github.io/aerumap/ogp.png" />
-    <meta property="og:url" content="https://onekilowatt.github.io/aerumap/privacy" />
+    <meta property="og:url" content="https://onekilowatt.github.io/aerumap/?/privacy" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="あえるまっぷ" />
 
     <link rel="apple-touch-icon" href="https://onekilowatt.github.io/aerumap/logo192.png" />
     <link rel="manifest" href="https://onekilowatt.github.io/aerumap/manifest.json" />
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <!-- 構造化データ（SEO対策） -->
@@ -39,7 +43,7 @@
       "@type": "WebPage",
       "name": "プライバシーポリシー - あえるまっぷ",
       "description": "あえるまっぷのプライバシーポリシーと個人情報保護について",
-      "url": "https://onekilowatt.github.io/aerumap/privacy",
+      "url": "https://onekilowatt.github.io/aerumap/?/privacy",
       "isPartOf": {
         "@type": "WebSite",
         "name": "あえるまっぷ",
@@ -54,32 +58,13 @@
     }
     </script>
 
-    <!-- アプリにリダイレクト -->
+    <!-- 🔥 JavaScript フォールバック（遅延なし・絶対URL） -->
     <script type="text/javascript">
-      // SPAアプリケーションにリダイレクト（GitHub Pages SPA形式）
-      setTimeout(() => {
-        window.location.replace('/aerumap/?/privacy');
-      }, 100);
-
-      // ドットアニメーション: . → .. → ... → 繰り返し
-      let dotCount = 1;
-      function animateDots() {
-        const titleElement = document.getElementById('loading-title');
-        if (titleElement) {
-          const dots = '.'.repeat(dotCount);
-          titleElement.textContent = `Now Loading${dots}`;
-          dotCount = dotCount >= 3 ? 1 : dotCount + 1;
-        }
-      }
-
-      // ページ読み込み後にドットアニメーション開始
-      window.addEventListener('DOMContentLoaded', () => {
-        setInterval(animateDots, 500);
-      });
+      // meta refreshが効かない場合の即座のフォールバック
+      window.location.replace('https://onekilowatt.github.io/aerumap/?/privacy');
     </script>
 
     <style>
-      /* LoadingComponentと同じスタイル */
       body {
         margin: 0;
         padding: 0;
@@ -125,14 +110,34 @@
         border: 1px solid #ddd;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
+
+      .fallback-link {
+        margin-top: 20px;
+      }
+
+      .fallback-link a {
+        color: #8B4513;
+        text-decoration: none;
+        border: 2px solid #8B4513;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-block;
+        transition: all 0.3s ease;
+      }
+
+      .fallback-link a:hover {
+        background-color: #8B4513;
+        color: white;
+      }
     </style>
   </head>
 
   <body>
-    <noscript>JavaScriptを有効にしてください。</noscript>
+    <noscript>
+      <p><a href="https://onekilowatt.github.io/aerumap/?/privacy">プライバシーポリシーはこちら</a></p>
+    </noscript>
     
     <div class="loading-container">
-      <!-- メイン画像 -->
       <div class="loading-image-wrapper">
         <img 
           src="https://onekilowatt.github.io/aerumap/images/nowloading.png" 
@@ -141,15 +146,18 @@
         />
       </div>
 
-      <!-- Now Loading... -->
-      <h1 class="loading-title" id="loading-title">
-        Now Loading.
+      <h1 class="loading-title">
+        Now Loading...
       </h1>
 
-      <!-- メッセージ -->
       <p class="loading-message">
         ちょっとまっててねっ！おへやのかざり、がんばってるところ〜🎀✨
       </p>
+
+      <!-- 🔥 手動リンク（最終フォールバック） -->
+      <div class="fallback-link">
+        <a href="https://onekilowatt.github.io/aerumap/?/privacy">プライバシーポリシーへ</a>
+      </div>
     </div>
   </body>
 </html>
