@@ -4,7 +4,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 */1 * * *'  # まず1時間おきに変更
+    - cron: '0 17 * * *'  # 日本時間 午前2時（UTC 17時）に1日1回実行
   workflow_dispatch:  # 手動実行を追加
 
 jobs:
