@@ -7,33 +7,29 @@
     <meta name="theme-color" content="#8FBC8F" />
     <meta name="robots" content="index, follow" />
 
-    <title id="page-title">あえるまっぷ | 友達とリアルタイムで位置を共有できる地図アプリ</title>
+    <title id="page-title">地図で合流する – あえるまっぷ</title>
 
     <meta
       name="description"
-      content="「今どこ？」のやり取りを省いて、待ち合わせをもっとスムーズに。あえるまっぷは、友達・家族・恋人とリアルタイムで位置を共有できるインストール不要のWebアプリです。"
+      content="「今どこ？」のやりとりはもういらない。地図を見ながら、まっすぐ会いにいこう。アプリいらず、すぐ合流。"
       id="page-description"
     />
     <meta
       name="keywords"
-      content="あえるまっぷ, 位置共有, 地図アプリ, リアルタイム, 待ち合わせ, GPS, ブラウザアプリ"
+      content="あえるまっぷ, 位置共有, 地図アプリ, リアルタイム, 待ち合わせ, GPS, ブラウザアプリ, 合流"
     />
     <link rel="canonical" href="https://onekilowatt.github.io/aerumap/" id="canonical" />
 
-    <!-- OGP（SNS対応） - 動的に更新される -->
-    <meta property="og:title" content="あえるまっぷ" id="og-title" />
-    <meta property="og:description" content="「今どこ？」のやり取りを省ける、インストール不要のリアルタイム位置共有アプリ。" id="og-description" />
+    <!-- OGP（SNS対応） - SNSクローラー用の初期値を改善 -->
+    <meta property="og:title" content="地図で合流する – あえるまっぷ" id="og-title" />
+    <meta property="og:description" content="「今どこ？」のやりとりはもういらない。地図を見ながら、まっすぐ会いにいこう。アプリいらず、すぐ合流。" id="og-description" />
     <meta property="og:image" content="https://onekilowatt.github.io/aerumap/ogp.png" id="og-image" />
     <meta property="og:url" content="https://onekilowatt.github.io/aerumap/" id="og-url" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="あえるまっぷ" />
 
-
-
     <link rel="apple-touch-icon" href="https://onekilowatt.github.io/aerumap/logo192.png" />
     <link rel="manifest" href="https://onekilowatt.github.io/aerumap/manifest.json" />
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <style>
       /* LoadingComponentと同じスタイル */
@@ -90,13 +86,10 @@
       const roomId = urlParams.get('id');
       
       if (roomId) {
-        // 動的メタタグ生成
+        // 動的メタタグ生成（JavaScript対応ブラウザ用の追加最適化）
         const roomTitle = `あえるまっぷ - ルーム ${roomId}`;
         const roomDescription = `ルーム ${roomId} で位置を共有中。今すぐ参加しよう！`;
         const roomUrl = `https://onekilowatt.github.io/aerumap/room/${roomId}`;
-        
-        // 動的OGP画像生成（og-image.vercel.appを使用）
-        const dynamicImage = `https://og-image.vercel.app/**あえるまっぷ**%0A%0A🗺️%20ルーム%20${encodeURIComponent(roomId)}%0A📍%20位置共有中.png?theme=light&md=1&fontSize=50px`;
         
         // DOM要素が存在する場合のみ更新
         function updateMetaTag(id, attribute, value) {
@@ -119,19 +112,14 @@
         updateMetaTag('og-title', 'content', roomTitle);
         updateMetaTag('og-description', 'content', roomDescription);
         updateMetaTag('og-url', 'content', roomUrl);
-        updateMetaTag('og-image', 'content', dynamicImage);
 
         
-        // クローラー待機後（十分な時間を確保）、綺麗なURLにリダイレクト
-        setTimeout(() => {
-          window.location.replace(`/aerumap/room/${roomId}`);
-        }, 300); // 300ms待機でOGPクローラーを確実に待つ
+        // 即座に綺麗なURLにリダイレクト
+        window.location.replace(`/aerumap/room/${roomId}`);
         
       } else {
         // roomIdがない場合はトップページへ
-        setTimeout(() => {
-          window.location.replace('/aerumap/');
-        }, 100);
+        window.location.replace('/aerumap/');
       }
 
       // ドットアニメーション: . → .. → ... → 繰り返し
