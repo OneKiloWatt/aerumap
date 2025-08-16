@@ -1,2 +1,2 @@
-docker exec -it react-spa-dev /bin/sh
+docker exec -it react-app /bin/sh
 
