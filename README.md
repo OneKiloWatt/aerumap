@@ -110,7 +110,7 @@ firebase deploy --only functions
 2. 仕様書に基づいてコード実装
 3. 変更時は仕様書を更新してからコード修正
 
-詳細は [Qiita記事](リンク予定) をご覧ください。
+詳細は [Qiita記事](https://qiita.com/OneKiloWatt/items/647614a6ae6c09e5a3e2) をご覧ください。
 
 ### 技術スタック
 - **フロントエンド**: React + React-Leaflet
@@ -123,7 +123,7 @@ firebase deploy --only functions
 
 ## 📄 ライセンス
 
-MIT License.  
+Apache-2.0 
 詳細は [LICENSE](./LICENSE) を参照してください。
 
 ---
