@@ -31,7 +31,7 @@ interface MapViewProps {
   roomId?: string;
   onShareClick?: () => void;
   onMapReady?: () => void;
-  initialPosition?: [number, number] | null; // 🆕 初期位置情報
+  initialPosition?: [number, number] | null;
 }
 
 // 時刻フォーマット関数
@@ -43,11 +43,10 @@ const formatUpdateTime = (date: Date): string => {
     return 'たった今更新';
   } else if (diffInMinutes < 60) {
     return `${diffInMinutes}分前更新`;
-  } else if (diffInMinutes < 1440) { // 24時間
+  } else if (diffInMinutes < 1440) {
     const hours = Math.floor(diffInMinutes / 60);
     return `${hours}時間前更新`;
   } else {
-    // 24時間以上の場合は時刻を表示
     const timeString = date.toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
       minute: '2-digit' 
@@ -56,7 +55,7 @@ const formatUpdateTime = (date: Date): string => {
   }
 };
 
-// カスタムアイコン設定（文字表示）
+// カスタムアイコン設定
 const createCustomIcon = (isMe: boolean, nickname: string) => {
   const displayText = isMe ? 'ME' : nickname.charAt(0);
   
@@ -83,15 +82,12 @@ export default function MapView(props: MapViewProps = {}) {
   const [messageLoading, setMessageLoading] = useState(false);
   const [nicknameLoading, setNicknameLoading] = useState(false);
   const [exitLoading, setExitLoading] = useState(false);
-  // 🔧 プライバシー保護：初期表示位置を新宿駅に設定
-  const INITIAL_CENTER: [number, number] = [35.6896, 139.7006]; // 新宿駅
+  const INITIAL_CENTER: [number, number] = [35.6896, 139.7006];
   const [hasMovedToUserLocation, setHasMovedToUserLocation] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   
-  // 地図インスタンス参照用
   const mapRef = React.useRef<L.Map | null>(null);
   
-  // 地図インスタンス取得用の内部コンポーネント（Edge対応）
   const MapInstanceGetter = () => {
     const map = useMap();
     
@@ -105,7 +101,7 @@ export default function MapView(props: MapViewProps = {}) {
     return null;
   };
   
-  // 🔧 手動トリガー対応の位置情報フック
+  // 🔧 修正1: autoStartをfalseに統一
   logger.debug('useGeolocation フック呼び出し開始');
   
   const geolocationOptions = useMemo(() => ({
@@ -113,51 +109,55 @@ export default function MapView(props: MapViewProps = {}) {
     timeout: 10000,
     maximumAge: 5000,
     watchPosition: true,
-    autoStart: !initialPosition, // 🔧 初期位置がある場合は自動開始しない
-  }), [initialPosition]);
+    autoStart: false, // 🔧 全員falseに統一
+  }), []); // 🔧 依存配列を空に
   
   const { 
     position, 
     loading, 
     error, 
     startGeolocation, 
-    startGeolocationDelayed, // 🆕 遅延開始関数
+    startGeolocationDelayed,
     retryGeolocation,
-    forceRetryGeolocation // 🆕 強制再取得関数
+    forceRetryGeolocation
   } = useGeolocation(geolocationOptions);
 
-  // 🆕 初期位置情報の処理
+  // 🔧 修正2: 明示的な位置情報取得開始
+  useEffect(() => {
+    if (roomId) {
+      if (initialPosition) {
+        logger.debug('初期位置あり、2秒遅延で位置情報監視開始');
+        startGeolocationDelayed(2000);
+      } else {
+        logger.debug('初期位置なし、即座に位置情報監視開始');
+        startGeolocation();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId]);
+
   const [finalPosition, setFinalPosition] = useState<[number, number] | null>(null);
   const [finalLoading, setFinalLoading] = useState(true);
   const [finalError, setFinalError] = useState<string | null>(null);
 
+  // 🔧 修正3: initialPositionの処理から位置情報取得開始を削除
   useEffect(() => {
     if (initialPosition) {
-      // 初期位置情報がある場合はそれを使用
-      console.log('📍 初期位置情報を使用:', initialPosition);
+      console.log('🗺️ 初期位置情報を使用:', initialPosition);
       setFinalPosition(initialPosition);
       setFinalLoading(false);
       setFinalError(null);
-      
-      // 🔧 重複ダイアログ防止：位置情報監視を2秒遅延で開始
-      if (roomId) {
-        console.log('⏰ 重複ダイアログ防止：位置情報監視を遅延で開始');
-        startGeolocationDelayed(); // デフォルト遅延を使用（2秒）
-      }
     } else if (position) {
-      // useGeolocationから位置情報を取得
       setFinalPosition(position);
       setFinalLoading(loading);
       setFinalError(error);
     } else {
-      // useGeolocationの状態をそのまま使用
       setFinalPosition(position);
       setFinalLoading(loading);
       setFinalError(error);
     }
-  }, [initialPosition, position, loading, error, roomId, startGeolocationDelayed]);
+  }, [initialPosition, position, loading, error]);
 
-  // 位置情報共有フック
   const { 
     otherUsers, 
     isSharing, 
@@ -169,20 +169,17 @@ export default function MapView(props: MapViewProps = {}) {
     position: finalPosition
   });
 
-  // 自分のメンバー情報取得フック
   const { 
     memberInfo: myMemberInfo, 
     loading: memberLoading, 
     error: memberError 
   } = useMyMemberInfo(roomId || '');
 
-  // 🆕 期限切れ監視フック（位置情報確定時のみ有効）
   const { isExpired, expiresAt } = useRoomExpiry({
     roomId: roomId || '',
     enabled: !!roomId && !!finalPosition && !finalLoading
   });
   
-  // 位置情報の状態ログ
   logger.debug('位置情報状態', { 
     hasPosition: !!finalPosition, 
     loading: finalLoading, 
@@ -196,7 +193,6 @@ export default function MapView(props: MapViewProps = {}) {
     expiresAt: expiresAt?.toISOString()
   });
 
-  // 🆕 期限切れ時の自動退出処理
   React.useEffect(() => {
     if (!isExpired || !roomId) return;
 
@@ -205,7 +201,6 @@ export default function MapView(props: MapViewProps = {}) {
       expiresAt: expiresAt?.toISOString()
     });
 
-    // 自動退出処理
     const performAutoExit = async () => {
       try {
         const result = await exitRoom(roomId);
@@ -225,11 +220,9 @@ export default function MapView(props: MapViewProps = {}) {
     performAutoExit();
   }, [isExpired, roomId, navigate, expiresAt]);
 
-  // リアルタイム通知用：前回のotherUsers状態を記録
   const prevOtherUsersRef = React.useRef<typeof otherUsers>([]);
   const isInitialLoadRef = React.useRef(true);
   
-  // otherUsersの変化を監視してリアルタイム通知
   React.useEffect(() => {
     if (!isSharing || !myMemberInfo) return;
     
@@ -251,17 +244,14 @@ export default function MapView(props: MapViewProps = {}) {
       return;
     }
     
-    // 新規参加者を検出
     const newUsers = currentUsers.filter(current => 
       !prevUsers.some(prev => prev.uid === current.uid)
     );
     
-    // 退出者を検出
     const leftUsers = prevUsers.filter(prev => 
       !currentUsers.some(current => current.uid === prev.uid)
     );
     
-    // メッセージ更新者を検出
     const messageUpdatedUsers = currentUsers.filter(current => {
       const prevUser = prevUsers.find(prev => prev.uid === current.uid);
       if (!prevUser) return false;
@@ -284,19 +274,16 @@ export default function MapView(props: MapViewProps = {}) {
       messageUpdatedUsers: messageUpdatedUsers.length
     });
     
-    // 新規参加通知
     newUsers.forEach(user => {
       logger.debug('新規参加者検出 → 通知表示', { nickname: user.nickname });
       showInfo(`${user.nickname}さんが参加しました 👋`, { duration: 4000 });
     });
     
-    // 退出通知
     leftUsers.forEach(user => {
       logger.debug('退出者検出 → 通知表示', { nickname: user.nickname });
       showInfo(`${user.nickname}さんが退出しました 👋`, { duration: 4000 });
     });
     
-    // メッセージ更新通知
     messageUpdatedUsers.forEach(user => {
       logger.debug('メッセージ更新検出 → 通知表示', { 
         nickname: user.nickname, 
@@ -310,12 +297,10 @@ export default function MapView(props: MapViewProps = {}) {
       showInfo(messageText, { duration: 5000 });
     });
     
-    // 現在の状態を記録
     prevOtherUsersRef.current = currentUsers;
     
   }, [otherUsers, isSharing, myMemberInfo, showInfo]);
 
-  // 地図読み込み完了時の処理
   React.useEffect(() => {
     if (!finalLoading && finalPosition && !mapReady) {
       logger.debug('地図読み込み完了処理開始');
@@ -327,7 +312,6 @@ export default function MapView(props: MapViewProps = {}) {
     }
   }, [finalLoading, finalPosition, mapReady]);
 
-  // 🔧 新機能：自分の位置が確定したら地図を移動（ブラウザ互換性対応）
   React.useEffect(() => {
     if (finalPosition && !hasMovedToUserLocation) {
       logger.debug('初回位置確定、地図を自分の位置に移動', {
@@ -335,7 +319,6 @@ export default function MapView(props: MapViewProps = {}) {
         hasMapRef: !!mapRef.current
       });
       
-      // Edgeブラウザ対応：少し遅延を入れて地図インスタンスの準備を待つ
       const moveToUserLocation = () => {
         if (mapRef.current) {
           logger.debug('地図インスタンス確認済み、移動実行');
@@ -346,17 +329,14 @@ export default function MapView(props: MapViewProps = {}) {
           setHasMovedToUserLocation(true);
         } else {
           logger.debug('地図インスタンス未準備、100ms後に再試行');
-          // 地図インスタンスがまだ準備できていない場合は少し待って再試行
           setTimeout(moveToUserLocation, 100);
         }
       };
       
-      // 初回は即実行、失敗したら遅延再試行
       moveToUserLocation();
     }
   }, [finalPosition, hasMovedToUserLocation]);
 
-  // Firestore接続テスト（デバッグ用）
   React.useEffect(() => {
     if (roomId && finalPosition && !finalLoading) {
       logger.debug('Firestore接続テスト実行');
@@ -364,12 +344,10 @@ export default function MapView(props: MapViewProps = {}) {
     }
   }, [roomId, finalPosition, finalLoading]);
 
-  // マーカーデータに距離と更新時刻を含める
   const markers: MarkerData[] = useMemo(() => {
     const markerList: MarkerData[] = [];
     const now = new Date();
 
-    // 自分のマーカー
     if (finalPosition && myMemberInfo) {
       markerList.push({
         id: 'me',
@@ -399,9 +377,7 @@ export default function MapView(props: MapViewProps = {}) {
       logger.debug('自分のマーカー作成（フォールバック）');
     }
 
-    // 他のユーザーのマーカー（距離計算を正確に行う）
     otherUsers.forEach(user => {
-      // 🔧 距離計算：自分の位置が確定している場合のみ再計算
       let distance: string;
       if (finalPosition && user.lat && user.lng) {
         distance = calculateDistance(finalPosition[0], finalPosition[1], user.lat, user.lng);
@@ -412,7 +388,6 @@ export default function MapView(props: MapViewProps = {}) {
           calculatedDistance: distance
         });
       } else {
-        // フォールバック：useLocationSharingで計算された距離をそのまま使用
         distance = user.distance || '計算中';
         logger.debug('距離計算スキップ', {
           nickname: user.nickname,
@@ -472,7 +447,7 @@ export default function MapView(props: MapViewProps = {}) {
           paddingBottomRight: [50, 50] as [number, number],
           animate: true,
           duration: 1.0,
-          maxZoom: 18  // maxZoomを18に変更
+          maxZoom: 18
         };
         
         mapRef.current.fitBounds(bounds, paddingOptions);
@@ -490,7 +465,7 @@ export default function MapView(props: MapViewProps = {}) {
   };
 
   const handleShare = () => {
-    const basename = process.env.PUBLIC_URL || ''; // GitHub Pages対応
+    const basename = process.env.PUBLIC_URL || '';
     const roomUrl = roomId 
       ? `${window.location.origin}${basename}/room?id=${roomId}`
       : `${window.location.origin}${basename}/room?id=ABC123`;
@@ -518,7 +493,7 @@ export default function MapView(props: MapViewProps = {}) {
     logger.debug('メッセージ編集ボタン押下');
     const currentMessage = myMemberInfo?.message || '';
     setEditingMessage(currentMessage);
-    setShowMenu(false); // メニューから開いた場合はメニューを閉じる
+    setShowMenu(false);
     
     setTimeout(() => {
       setShowMessageModal(true);
@@ -528,7 +503,7 @@ export default function MapView(props: MapViewProps = {}) {
   const handleMessageSave = async () => {
     if (!roomId) {
       logger.error('roomId が存在しません');
-      showError('ルームIDが見つかりません。ページを再読み込みしてください。');
+      showError('ルーム IDが見つかりません。ページを再読み込みしてください。');
       return;
     }
 
@@ -571,7 +546,7 @@ export default function MapView(props: MapViewProps = {}) {
   const handleNicknameSave = async () => {
     if (!roomId) {
       logger.error('roomId が存在しません');
-      showError('ルームIDが見つかりません。ページを再読み込みしてください。');
+      showError('ルーム IDが見つかりません。ページを再読み込みしてください。');
       return;
     }
 
@@ -623,7 +598,7 @@ export default function MapView(props: MapViewProps = {}) {
   const handleExitConfirm = async () => {
     if (!roomId) {
       logger.error('roomId が存在しません');
-      showError('ルームIDが見つかりません。ページを再読み込みしてください。');
+      showError('ルーム IDが見つかりません。ページを再読み込みしてください。');
       return;
     }
 
@@ -657,13 +632,11 @@ export default function MapView(props: MapViewProps = {}) {
     setShowExitDialog(false);
   };
 
-  // 🔧 位置情報再取得ハンドラー（Safari対応）
   const handleLocationRetry = () => {
     logger.debug('位置情報再取得ボタン押下');
-    forceRetryGeolocation(); // 🔧 強制再取得を使用（制限を無視）
+    forceRetryGeolocation();
   };
 
-  // 位置情報エラーと読み込み状態の判定
   logger.debug('位置情報エラー判定デバッグ', {
     hasPosition: !!finalPosition,
     loading: finalLoading,
@@ -679,7 +652,7 @@ export default function MapView(props: MapViewProps = {}) {
   if (finalLoading) {
     logger.debug('位置情報ローディング中を表示');
     return (
-      <LoadingComponent message="あなたの居場所をさがしてるよ〜📍🔍 ちょっとまっててね！" />
+      <LoadingComponent message="あなたの居場所をさがしてるよ～🔍 ちょっとまっててね！" />
     );
   }
 
@@ -698,7 +671,7 @@ export default function MapView(props: MapViewProps = {}) {
           <div className="location-error-icon">📍</div>
           <h2 className="location-error-title">あれれ、今どこにいるかわかんないみたい！</h2>
           <p className="location-error-description">
-            <strong>あえるまっぷを使うには、位置情報の共有が必要だよ〜！</strong><br />
+            <strong>あえるまっぷを使うには、位置情報の共有が必要だよ～！</strong><br />
             スマホやブラウザの設定をチェックして、もう一回試してみてね💡✨
           </p>
           
@@ -721,7 +694,7 @@ export default function MapView(props: MapViewProps = {}) {
               className="location-retry-btn"
               onClick={handleLocationRetry}
             >
-              📍 位置情報を再取得
+              🔄 位置情報を再取得
             </button>
           </div>
           
@@ -754,7 +727,6 @@ export default function MapView(props: MapViewProps = {}) {
 
   return (
     <div className="map-container">
-      {/* メッセージ編集モーダル */}
       {showMessageModal && (
         <div 
           className="message-overlay"
@@ -812,7 +784,6 @@ export default function MapView(props: MapViewProps = {}) {
         </div>
       )}
 
-      {/* ニックネーム編集モーダル */}
       {showNicknameModal && (
         <div 
           className="message-overlay"
@@ -871,14 +842,12 @@ export default function MapView(props: MapViewProps = {}) {
         </div>
       )}
 
-      {/* 実際の地図 */}
       <MapContainer
         center={INITIAL_CENTER}
         zoom={16}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
       >
-        {/* Edge対応：確実な地図インスタンス取得 */}
         <MapInstanceGetter />
         
         <TileLayer
@@ -888,7 +857,6 @@ export default function MapView(props: MapViewProps = {}) {
           minZoom={1}
         />
         
-        {/* マーカー表示 */}
         {markers.map(marker => (
           <Marker
             key={`marker-${marker.id}`}
@@ -926,22 +894,18 @@ export default function MapView(props: MapViewProps = {}) {
         ))}
       </MapContainer>
 
-      {/* 左上メニューボタン */}
       <button className="menu-button" onClick={handleMenuToggle}>
         ≡
       </button>
 
-      {/* 右上共有ボタン */}
       <button className="share-button" onClick={handleShare}>
         <Share2 color="#8B4513" size={22} strokeWidth={2.5} />
       </button>
 
-      {/* 右下現在位置ボタン */}
       <button className="location-button" onClick={handleFitBounds}>
         <div className="location-icon"></div>
       </button>
 
-      {/* メニューオプション */}
       {showMenu && (
         <div className="menu-overlay" onClick={() => setShowMenu(false)}>
           <div className="menu-dropdown" onClick={e => e.stopPropagation()}>
@@ -959,7 +923,6 @@ export default function MapView(props: MapViewProps = {}) {
         </div>
       )}
 
-      {/* 退出確認ダイアログ */}
       {showExitDialog && (
         <div className="menu-overlay">
           <div className="exit-dialog">
@@ -990,7 +953,6 @@ export default function MapView(props: MapViewProps = {}) {
         </div>
       )}
 
-      {/* トースト通知システム */}
       <ToastContainer 
         toasts={toasts} 
         onRemove={removeToast} 
