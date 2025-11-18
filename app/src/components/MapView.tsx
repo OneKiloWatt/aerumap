@@ -101,7 +101,6 @@ export default function MapView(props: MapViewProps = {}) {
     return null;
   };
   
-  // 🔧 修正1: autoStartをfalseに統一
   logger.debug('useGeolocation フック呼び出し開始');
   
   const geolocationOptions = useMemo(() => ({
@@ -122,7 +121,6 @@ export default function MapView(props: MapViewProps = {}) {
     forceRetryGeolocation
   } = useGeolocation(geolocationOptions);
 
-  // 🔧 修正2: 明示的な位置情報取得開始
   useEffect(() => {
     if (roomId) {
       if (initialPosition) {
@@ -140,22 +138,10 @@ export default function MapView(props: MapViewProps = {}) {
   const [finalLoading, setFinalLoading] = useState(true);
   const [finalError, setFinalError] = useState<string | null>(null);
 
-  // 🔧 修正3: initialPositionの処理から位置情報取得開始を削除
   useEffect(() => {
-    if (initialPosition) {
-      console.log('🗺️ 初期位置情報を使用:', initialPosition);
-      setFinalPosition(initialPosition);
-      setFinalLoading(false);
-      setFinalError(null);
-    } else if (position) {
-      setFinalPosition(position);
-      setFinalLoading(loading);
-      setFinalError(error);
-    } else {
-      setFinalPosition(position);
-      setFinalLoading(loading);
-      setFinalError(error);
-    }
+    setFinalPosition(position);
+    setFinalLoading(loading);
+    setFinalError(error);
   }, [initialPosition, position, loading, error]);
 
   const { 
