@@ -139,9 +139,20 @@ export default function MapView(props: MapViewProps = {}) {
   const [finalError, setFinalError] = useState<string | null>(null);
 
   useEffect(() => {
-    setFinalPosition(position);
-    setFinalLoading(loading);
-    setFinalError(error);
+    if (position) {
+      setFinalPosition(position);
+      setFinalLoading(loading);
+      setFinalError(error);
+    }else if (initialPosition) {
+      console.log('🗺️ 初期位置情報を使用:', initialPosition);
+      setFinalPosition(initialPosition);
+      setFinalLoading(false);
+      setFinalError(null);
+    } else {
+      setFinalPosition(position);
+      setFinalLoading(loading);
+      setFinalError(error);
+    }
   }, [initialPosition, position, loading, error]);
 
   const { 
