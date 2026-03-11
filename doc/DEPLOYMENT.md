@@ -28,39 +28,79 @@
 
 ## 3. 自動デプロイ（GitHub Actions）
 
-### ビルド & デプロイ（Pages）
+### フロントエンド（GitHub Pages）
 
+* ワークフロー：`.github/workflows/pages-deploy.yml`
 * 対象：`app/` ディレクトリ
-* コマンド例：
+* トリガー：`main` ブランチへのプッシュ
+* ビルドコマンド：
 
 ```bash
-yarn install
-yarn build
-git push origin main
+npm ci
+PUBLIC_URL=/aerumap npm run build
 ```
 
-* GitHub Actions により `build` 成果物を GitHub Pages に公開
+* 必要な GitHub Secrets：
+
+| Secret名 | 内容 |
+|---|---|
+| `REACT_APP_API_KEY` | Firebase API Key |
+| `REACT_APP_AUTH_DOMAIN` | Firebase Auth Domain |
+| `REACT_APP_PROJECT_ID` | Firebase Project ID |
+| `REACT_APP_APP_ID` | Firebase App ID |
+
+### バックエンド（Firebase Functions / Firestore）
+
+* ワークフロー：`.github/workflows/firebase-prod-deploy.yml`
+* 対象：`functions`（Cloud Functions）および `firestore`（ルール・インデックス）
+* トリガー：`main` ブランチへのプッシュ
+* デプロイコマンド：
+
+```bash
+npm ci --prefix functions
+npm run build --prefix functions
+firebase deploy --only functions,firestore --project aerumap --token "$FIREBASE_TOKEN"
+```
+
+* 必要な GitHub Secrets：
+
+| Secret名 | 内容 |
+|---|---|
+| `FIREBASE_TOKEN` | Firebase CI トークン（`firebase login:ci` で取得） |
 
 ---
 
-## 4. 定期削除処理（ルームの自動削除）
+## 4. 定期削除処理
 
-* 実行タイミング：**3時間おきに自動実行**（cron）
-* スクリプト：`scripts/cleanup.js`
+GitHub Actions の cron によってサーバーレスで定期実行しています。
+
+### ルームの自動削除
+
+* ワークフロー：`.github/workflows/room-cleanup.yml`
+* スクリプト：`actions/script/room-cleanup.js`
+* 実行タイミング：**3時間おき**（`cron: '0 */3 * * *'`）
 * 処理内容：
-
   * Firestore の `rooms/` を走査
-  * `expiresAt` を過ぎたルーム・位置情報・参加情報を一括削除
+  * `expiresAt` を過ぎたルーム・参加者情報・位置情報を一括削除
+
+### メンテナンス削除（accessLogs / rateLimits）
+
+* ワークフロー：`.github/workflows/maintenance-cleanup.yml`
+* スクリプト：`actions/script/maintenance-cleanup.js`
+* 実行タイミング：**1日1回、日本時間午前2時**（`cron: '0 17 * * *'`）
+* 処理内容：
+  * `accessLogs`：30日経過したドキュメントを削除
+  * `rateLimits`：`expiresAt` を過ぎたドキュメントを削除
 
 ### 認証方法：Firebase Admin SDK
 
-* `.env` or GitHub Secrets にサービスアカウント鍵（`.json`）を登録
-* `GOOGLE_APPLICATION_CREDENTIALS` に設定
+* サービスアカウント鍵を base64 エンコードして GitHub Secrets に登録
+* スクリプト内で `GCP_SERVICE_ACCOUNT_KEY` を base64 デコードして使用
 * Firestore のセキュリティルールはバイパス可能（管理権限）
 
 ```yaml
 env:
-  GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+  GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 ```
 
 ---

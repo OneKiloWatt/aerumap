@@ -52,7 +52,7 @@ aerumap/
 | `ROOM_LOGIC.md`     | ルームのライフサイクル設計（招待〜退出〜削除） |
 | `FIRESTORE_RULES.md`| Firestore セキュリティルールの方針と構文 |
 | `DATA_STRUCTURES.md`| Firestoreコレクション/ドキュメントの構造定義 |
-| `DEPLOYMENT.md`     | Firebase Hosting / GitHub Actions / 定期削除などのデプロイ構成・CI設計 |
+| `DEPLOYMENT.md`     | Firebase / GitHub Actions のデプロイ構成・CI設計 |
 | `PAGES/`            | `ROOM.md`など各ページの詳細仕様（複雑なUIがある画面のみ） |
 | `API/`              | `CREATE_ROOM.md`, `JOIN_ROOM.md`など、APIごとの仕様ファイル |
 
@@ -91,12 +91,17 @@ bash rebuild.sh
 
 ### GitHub Pages（自動デプロイ）
 - `main` ブランチへのプッシュで自動デプロイ
-- GitHub Actions により `app/build/` をGitHub Pagesに公開
+- GitHub Actions により `app/build/` を GitHub Pages に公開
 
-### Firebase Functions
+### Firebase（自動デプロイ）
+- `main` ブランチへのプッシュで自動デプロイ
+- GitHub Actions により `functions` および `firestore`（ルール・インデックス）をデプロイ
+
+手動でデプロイする場合：
+
 ```bash
 cd firebase
-firebase deploy --only functions
+firebase deploy --only functions,firestore --project aerumap
 ```
 
 ---
@@ -123,7 +128,7 @@ firebase deploy --only functions
 
 ## 📄 ライセンス
 
-Apache-2.0 
+Apache-2.0  
 詳細は [LICENSE](./LICENSE) を参照してください。
 
 ---
@@ -140,3 +145,4 @@ Apache-2.0
 
 - **GitHub Issues**: https://github.com/OneKiloWatt/aerumap/issues
 - プライバシー・セキュリティに関するご質問も上記から受け付けております
+
