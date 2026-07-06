@@ -183,7 +183,7 @@ export default function RoomJoinForm({ roomId, onSubmit, onError }: Props) {
                 このルームでは、あなたの現在地がリアルタイムで共有されるよ〜
               </p>
               <p>
-                詳しくは<a href="/terms" target="_blank" rel="noopener noreferrer">利用規約</a>へ。
+                詳しくは<a href={`${process.env.PUBLIC_URL || ''}/terms`} target="_blank" rel="noopener noreferrer">利用規約</a>へ。
               </p>
             </div>
 
